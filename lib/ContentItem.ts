@@ -6,6 +6,9 @@ export abstract class ContentItem
     private _parent: ContentTree | null = null;
     readonly root: ContentRoot;
 
+    ownData: any = {};
+    private _data: any = null; // cached data
+
     constructor(root: ContentRoot | null, permalink: string)
     {
         this._permalink = permalink;
@@ -24,8 +27,26 @@ export abstract class ContentItem
 
     get permalink(): string { return this._permalink; }
     get parent(): ContentTree | null { return this._parent; }
+    get data(): any { return this.resolveData(/* recompute: */ false); }
+
+    resolveData(recompute: true | false = false): any
+    {
+        if(null !== this._data && !recompute)
+            return this._data;
+        this._data = { ...this.parent?.data, ...this.ownData }; // just a shallow merge is ok.
+        for(let key in this._data)
+        {
+            if(typeof this._data[key] === 'function')
+            {
+                // TODO: emulate 11ty's data cascade
+            }
+        }
+        return this._data;
+    }
 }
-export class ContentTree extends ContentItem {
+
+export class ContentTree extends ContentItem
+{
     constructor(root: ContentRoot | null, permalink: string)
     {
         super(root, permalink);
@@ -64,7 +85,7 @@ export class ContentRoot extends ContentTree
     {
         if(!item.permalink)
             throw "Item must have a valid permalink."
-        let tree = this.getOrCreateTree(item.permalink);
+        const tree = this.getOrCreateTree(item.permalink);
         tree.children.push(item);
     }
 }

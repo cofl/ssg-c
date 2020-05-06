@@ -21,8 +21,8 @@ export async function* ignoreWalk(root: string, options: Options): AsyncGenerato
     ];
     options.encoding = options.encoding || 'utf-8';
 
-    let baseIgnore = ignore().add(options.defaultIgnoreRules).add(options.ignoreFiles);
-    let stack: { ignore: Ignore | null, path: string, dir: Dir }[] = [
+    const baseIgnore = ignore().add(options.defaultIgnoreRules).add(options.ignoreFiles);
+    const stack: { ignore: Ignore | null, path: string, dir: Dir }[] = [
         {
             ignore: null,
             path: relative(root, root),
@@ -32,7 +32,7 @@ export async function* ignoreWalk(root: string, options: Options): AsyncGenerato
 
     outer: while(stack.length > 0)
     {
-        let top = stack[stack.length - 1];
+        const top = stack[stack.length - 1];
         let entry: Dirent | null = top.dir.readSync();
         if(null === entry)
         {
@@ -49,7 +49,7 @@ export async function* ignoreWalk(root: string, options: Options): AsyncGenerato
             {
                 try
                 {
-                    let path = join(top.path, name);
+                    const path = join(top.path, name);
                     if(statSync(path).isFile())
                         top.ignore.add(readFileSync(path, options.encoding));
                 } catch

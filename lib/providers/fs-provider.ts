@@ -35,7 +35,7 @@ export class FileSystemProvider implements ContentProvider
     {
         for await (const filePath of ignoreWalk(this.path, this.ignoreOptions))
         {
-            let permalink = join(base.permalink, relative(this.path, filePath)).replace(/\\/g, '/');
+            const permalink = join(base.permalink, relative(this.path, filePath)).replace(/\\/g, '/');
             new ContentFile(root, permalink, filePath);
         }
     }
