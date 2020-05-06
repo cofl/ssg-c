@@ -1,5 +1,5 @@
 import ignore, { Ignore } from 'ignore';
-import { opendirSync, Dir, Dirent, statSync, Stats, readFileSync, realpathSync } from 'fs';
+import { opendirSync, Dir, Dirent, statSync, readFileSync, realpathSync } from 'fs';
 import { join, resolve, relative } from 'path';
 
 export interface Options
