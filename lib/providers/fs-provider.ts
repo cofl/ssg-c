@@ -3,6 +3,8 @@ import { ContentProvider } from "../ContentProvider";
 import { Options, ignoreWalk } from "../util/ignore-recursive";
 import { join, relative } from "path";
 
+import graymatter from "gray-matter";
+
 export class ContentFile extends ContentItem
 {
     readonly filePath: string;
@@ -11,6 +13,9 @@ export class ContentFile extends ContentItem
         super(root, permalink);
         this.filePath = filePath;
         this.parent?.children.push(this);
+        let { data, content } = graymatter.read(filePath); //TODO: expose gray-matter options in provider or something
+        this.ownData = data;
+        // TODO: store content
     }
 
     render()
