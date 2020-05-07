@@ -1,11 +1,12 @@
-import { ContentItem, ContentTree, ContentRoot } from "../ContentItem";
+import { ContentItem, ContentFile, ContentTree, ContentRoot } from "../ContentItem";
 import { ContentProvider } from "../ContentProvider";
 import { Options, ignoreWalk } from "../util/ignore-recursive";
-import { join, relative } from "path";
+import { join, relative, extname } from "path";
 
 import graymatter from "gray-matter";
+import { Config } from "../Config";
 
-export class ContentFile extends ContentItem
+class StaticContentFile extends ContentItem
 {
     readonly filePath: string;
     constructor(root: ContentRoot, permalink: string, filePath: string)
@@ -13,9 +14,6 @@ export class ContentFile extends ContentItem
         super(root, permalink);
         this.filePath = filePath;
         this.parent?.children.push(this);
-        let { data, content } = graymatter.read(filePath); //TODO: expose gray-matter options in provider or something
-        this.ownData = data;
-        // TODO: store content
     }
 
     render()
@@ -36,12 +34,22 @@ export class FileSystemProvider implements ContentProvider
         };
     }
 
-    async populate(root: ContentRoot, base: ContentTree)
+    async populate(root: ContentRoot, base: ContentTree, config: Config)
     {
         for await (const filePath of ignoreWalk(this.path, this.ignoreOptions))
         {
             const permalink = join(base.permalink, relative(this.path, filePath)).replace(/\\/g, '/');
-            new ContentFile(root, permalink, filePath);
+            let transformer = config.fileTransformers[extname(permalink)];
+            console.log(transformer);
+            if(transformer?.fileType === 'TextWithFrontmatter')
+            {
+                //TODO: expose gray-matter options in provider or something
+                const { data, content } = graymatter.read(filePath);
+                const _ = new ContentFile(root, permalink, filePath, data, content);
+            } else
+            {
+                const _ = new StaticContentFile(root, permalink, filePath);
+            }
         }
     }
 }

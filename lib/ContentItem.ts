@@ -26,6 +26,10 @@ export abstract class ContentItem
     abstract render(): void;
 
     get permalink(): string { return this._permalink; }
+    set permalink(newLink: string){
+        // TODO: handle moving
+        this._permalink = newLink;
+    }
     get parent(): ContentTree | null { return this._parent; }
     get data(): any { return this.resolveData(/* recompute: */ false); }
 
@@ -87,5 +91,31 @@ export class ContentRoot extends ContentTree
             throw "Item must have a valid permalink."
         const tree = this.getOrCreateTree(item.permalink);
         tree.children.push(item);
+    }
+}
+
+export class ContentFile extends ContentItem
+{
+    readonly filePath: string;
+    content: string;
+    constructor(root: ContentRoot, permalink: string, filePath: string, ownData: any, content: string)
+    {
+        super(root, permalink);
+        this.filePath = filePath;
+        this.parent?.children.push(this);
+        this.ownData = ownData;
+        this.content = content;
+    }
+
+    render()
+    {
+        console.log(this.permalink);
+    }
+
+    changeExtension(newExtension: string): void
+    {
+        if(newExtension[0] !== '.')
+            newExtension = '.' + newExtension;
+        this.permalink = this.permalink.replace(/\.[^\.]+$/, newExtension);
     }
 }
