@@ -24,7 +24,7 @@ export class SSGC
         /*
          * Populate content tree.
          */
-        const contentProviders = this.config.contentProviders.slice();
+        const contentProviders = this.config.contentProvidersOrDefault.slice();
         for(let i = 0; i < contentProviders.length; i += 1)
         {
             const providerMapping = contentProviders[i];

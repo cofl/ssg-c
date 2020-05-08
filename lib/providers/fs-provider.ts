@@ -41,7 +41,6 @@ export class FileSystemProvider implements ContentProvider
         {
             const permalink = join(base.permalink, relative(this.path, filePath)).replace(/\\/g, '/');
             let transformer = config.fileTransformers[extname(permalink)];
-            console.log(transformer);
             if(transformer?.fileType === 'TextWithFrontmatter')
             {
                 //TODO: expose gray-matter options in provider or something

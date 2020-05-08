@@ -1,13 +1,16 @@
 import { FileContentTransformer } from "./ContentTransformer";
 import MarkdownContentTransformer from "./transformers/md-transformer";
 import { ContentProviderMapping } from "./ContentProvider";
+import { FileSystemProvider } from "./providers/fs-provider";
 
 export class Config
 {
-    private parent: Config | null; // does config need a parent?
-    constructor(parent: Config | null = null)
+    readonly rootDirectory: string;
+    constructor(options: {
+        rootDirectory?: string
+    } = {})
     {
-        this.parent = parent;
+        this.rootDirectory = options.rootDirectory || process.cwd();
     }
 
     dataDeepMerge: true | false = false;
@@ -18,5 +21,14 @@ export class Config
         return {
             "md": new MarkdownContentTransformer()
         };
+    }
+
+    get contentProvidersOrDefault(): ContentProviderMapping
+    {
+        if(this.contentProviders.length > 0)
+            return this.contentProviders;
+        return [
+            { "/": new FileSystemProvider(this.rootDirectory) }
+        ]
     }
 }
