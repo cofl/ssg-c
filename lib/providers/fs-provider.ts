@@ -1,17 +1,18 @@
 import { ContentItem, ContentFile, ContentTree, ContentRoot } from "../ContentItem";
-import { ContentProvider } from "../ContentProvider";
+import { ContentProvider, ContentProviderMapping } from "../ContentProvider";
 import { Options, ignoreWalk } from "../util/ignore-recursive";
 import { join, relative, extname } from "path";
 
 import graymatter from "gray-matter";
 import { Config } from "../Config";
+import { DataTree } from "../DataTree";
 
 class StaticContentFile extends ContentItem
 {
     readonly filePath: string;
     constructor(root: ContentRoot, permalink: string, filePath: string)
     {
-        super(root, permalink);
+        super(new DataTree(), root, permalink);
         this.filePath = filePath;
         this.parent?.children.push(this);
     }
@@ -34,7 +35,7 @@ export class FileSystemProvider implements ContentProvider
         };
     }
 
-    async populate(root: ContentRoot, base: ContentTree, config: Config)
+    async populate(root: ContentRoot, base: ContentTree, config: Config): Promise<ContentProviderMapping>
     {
         for await (const filePath of ignoreWalk(this.path, this.ignoreOptions))
         {
@@ -45,11 +46,13 @@ export class FileSystemProvider implements ContentProvider
             {
                 //TODO: expose gray-matter options in provider or something
                 const { data, content } = graymatter.read(filePath);
-                const _ = new ContentFile(root, permalink, filePath, data, content);
+                const _ = new ContentFile(new DataTree(data), root, permalink, filePath, content);
             } else
             {
                 const _ = new StaticContentFile(root, permalink, filePath);
             }
         }
+
+        return [];
     }
 }

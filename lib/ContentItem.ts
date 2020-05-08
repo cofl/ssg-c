@@ -1,16 +1,16 @@
 import { dirname, isAbsolute } from "path";
+import { DataTree } from "./DataTree";
 
 export abstract class ContentItem
 {
     private _permalink: string;
     private _parent: ContentTree | null = null;
     readonly root: ContentRoot;
+    readonly data: DataTree;
 
-    ownData: any = {};
-    private _data: any = null; // cached data
-
-    constructor(root: ContentRoot | null, permalink: string)
+    constructor(data: DataTree, root: ContentRoot | null, permalink: string)
     {
+        this.data = data;
         this._permalink = permalink;
         if(this instanceof ContentRoot)
             this.root = this;
@@ -21,6 +21,8 @@ export abstract class ContentItem
             this.root = root;
             this._parent = root.getOrCreateTree(dirname(permalink));
         }
+        if(!this.data.parent && this._parent)
+            this.data.parent = this._parent.data;
     }
 
     abstract render(): void;
@@ -31,29 +33,13 @@ export abstract class ContentItem
         this._permalink = newLink;
     }
     get parent(): ContentTree | null { return this._parent; }
-    get data(): any { return this.resolveData(/* recompute: */ false); }
-
-    resolveData(recompute: true | false = false): any
-    {
-        if(null !== this._data && !recompute)
-            return this._data;
-        this._data = { ...this.parent?.data, ...this.ownData }; // just a shallow merge is ok.
-        for(let key in this._data)
-        {
-            if(typeof this._data[key] === 'function')
-            {
-                // TODO: emulate 11ty's data cascade
-            }
-        }
-        return this._data;
-    }
 }
 
 export class ContentTree extends ContentItem
 {
-    constructor(root: ContentRoot | null, permalink: string)
+    constructor(data: DataTree, root: ContentRoot | null, permalink: string)
     {
-        super(root, permalink);
+        super(data, root, permalink);
     }
     children: ContentItem[] = [];
 
@@ -66,9 +52,9 @@ export class ContentTree extends ContentItem
 
 export class ContentRoot extends ContentTree
 {
-    constructor()
+    constructor(data: DataTree)
     {
-        super(null, '/');
+        super(data, null, '/');
     }
     private subtrees: Record<string, ContentTree> = {};
     getOrCreateTree(link: string): ContentTree
@@ -80,8 +66,9 @@ export class ContentRoot extends ContentTree
         let tree = this.subtrees[link];
         if(!tree)
         {
-            tree = this.subtrees[link] = new ContentTree(this, link);
+            tree = this.subtrees[link] = new ContentTree(new DataTree(), this, link);
             tree.parent!.children.push(tree);
+            tree.data.parent = tree.parent!.data;
         }
         return tree;
     }
@@ -98,12 +85,11 @@ export class ContentFile extends ContentItem
 {
     readonly filePath: string;
     content: string;
-    constructor(root: ContentRoot, permalink: string, filePath: string, ownData: any, content: string)
+    constructor(data: DataTree, root: ContentRoot, permalink: string, filePath: string, content: string)
     {
-        super(root, permalink);
+        super(data, root, permalink);
         this.filePath = filePath;
         this.parent?.children.push(this);
-        this.ownData = ownData;
         this.content = content;
     }
 
