@@ -19,6 +19,14 @@ export class FileSystemProvider implements ContentProvider
         };
     }
 
+    static fromOptions(options: any): FileSystemProvider
+    {
+        const root = options.basePath || options.root;
+        if(!root)
+            throw "Missing required option \"basePath\", or alias \"root\".";
+        return new FileSystemProvider(root, options.ignoreOptions);
+    }
+
     async populate(root: ContentRoot, base: ContentTree, config: Config): Promise<ContentProviderMapping>
     {
         for await (const filePath of ignoreWalk(this.path, this.ignoreOptions))
