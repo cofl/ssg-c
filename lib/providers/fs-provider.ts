@@ -1,4 +1,4 @@
-import { ContentItem, ContentFile, ContentTree, ContentRoot } from "../ContentItem";
+import { StaticContentFile, ContentFile, ContentTree, ContentRoot } from "../ContentItem";
 import { ContentProvider, ContentProviderMapping } from "../ContentProvider";
 import { Options, ignoreWalk } from "../util/ignore-recursive";
 import { join, relative, extname } from "path";
@@ -6,22 +6,6 @@ import { join, relative, extname } from "path";
 import graymatter from "gray-matter";
 import { Config } from "../Config";
 import { DataTree } from "../DataTree";
-
-class StaticContentFile extends ContentItem
-{
-    readonly filePath: string;
-    constructor(root: ContentRoot, permalink: string, filePath: string)
-    {
-        super(new DataTree(), root, permalink);
-        this.filePath = filePath;
-        this.parent?.children.push(this);
-    }
-
-    render()
-    {
-        console.log(this.permalink);
-    }
-}
 
 export class FileSystemProvider implements ContentProvider
 {

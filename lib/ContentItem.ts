@@ -105,3 +105,19 @@ export class ContentFile extends ContentItem
         this.permalink = this.permalink.replace(/\.[^\.]+$/, newExtension);
     }
 }
+
+export class StaticContentFile extends ContentItem
+{
+    readonly filePath: string;
+    constructor(root: ContentRoot, permalink: string, filePath: string)
+    {
+        super(new DataTree(), root, permalink);
+        this.filePath = filePath;
+        this.parent?.children.push(this);
+    }
+
+    render()
+    {
+        console.log(this.permalink);
+    }
+}
