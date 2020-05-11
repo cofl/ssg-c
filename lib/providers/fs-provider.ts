@@ -1,30 +1,38 @@
 import { StaticContentFile, ContentFile, ContentTree, ContentRoot } from "../ContentItem";
 import { ContentProvider, ContentProviderMapping } from "../ContentProvider";
 import { Options, ignoreWalk } from "../util/ignore-recursive";
-import { join, relative, extname } from "path";
+import { join, relative, extname, isAbsolute, resolve } from "path";
 
 import graymatter from "gray-matter";
 import { Config } from "../Config";
 import { DataTree } from "../DataTree";
+import { existsSync, statSync } from "fs";
 
 export class FileSystemProvider implements ContentProvider
 {
     readonly path: string;
     readonly ignoreOptions: Options;
-    constructor(basePath: string, ignoreOptions?: Options)
+    constructor(basePath: string, config: Config, ignoreOptions?: Options)
     {
+        if(!isAbsolute(basePath))
+            throw `Path must be absolute: ${basePath}`;
         this.path = basePath;
         this.ignoreOptions = ignoreOptions || {
-            ignoreFiles: [ '.gitignore' ]
+            ignoreFiles: [ `.${config.configTokenFragment}-ignore` ]
         };
     }
 
-    static fromOptions(options: any): FileSystemProvider
+    static fromOptions(options: any, config: Config): FileSystemProvider
     {
         const root = options.basePath || options.root;
         if(!root)
             throw "Missing required option \"basePath\", or alias \"root\".";
-        return new FileSystemProvider(root, options.ignoreOptions);
+        const resolved = resolve(root);
+        if(!existsSync(resolved))
+            throw `Path must exist: ${resolved}`;
+        if(!statSync(resolved).isDirectory())
+            throw `Path must be a directory: ${resolved}`;
+        return new FileSystemProvider(resolved, config, options.ignoreOptions);
     }
 
     async populate(root: ContentRoot, base: ContentTree, config: Config): Promise<ContentProviderMapping>
@@ -37,10 +45,12 @@ export class FileSystemProvider implements ContentProvider
             {
                 //TODO: expose gray-matter options in provider or something
                 const { data, content } = graymatter.read(filePath);
-                const _ = new ContentFile(new DataTree(data), root, permalink, filePath, content);
+                const item = new ContentFile(new DataTree(data), root, permalink, filePath, content);
+                root.addItem(item);
             } else
             {
-                const _ = new StaticContentFile(root, permalink, filePath);
+                const item = new StaticContentFile(root, permalink, filePath);
+                root.addItem(item);
             }
         }
 

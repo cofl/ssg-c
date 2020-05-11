@@ -40,6 +40,6 @@ export class SSGC
         // TODO: apply tree transformers
         this.contentRoot.render(); // TODO: pass layouts, content transformers?
                                    // TODO: use processing stack instead of recursion?
-        console.log(util.inspect(this.contentRoot, false, null, true));
+        //console.log(util.inspect(this.contentRoot, false, null, true));
     }
 }

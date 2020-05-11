@@ -1,0 +1,12 @@
+{
+    "providers": {
+        "/": { "type": "fs", "root": "test" }
+    },
+    "options": {
+        "deepMerge": true
+    },
+    "paths": {
+        "content": "test/content",
+        "data": "test/data"
+    }
+}

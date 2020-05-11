@@ -50,12 +50,14 @@ export class ContentTree extends ContentItem
     }
 }
 
+type NotType<T, K> = T extends K ? never : T
 export class ContentRoot extends ContentTree
 {
     constructor(data: DataTree)
     {
         super(data, null, '/');
     }
+
     private subtrees: Record<string, ContentTree> = {};
     getOrCreateTree(link: string): ContentTree
     {
@@ -72,7 +74,8 @@ export class ContentRoot extends ContentTree
         }
         return tree;
     }
-    addItem(item: ContentItem): void
+
+    addItem<T extends ContentItem>(item: T & NotType<T, ContentTree>): void
     {
         if(!item.permalink)
             throw "Item must have a valid permalink."

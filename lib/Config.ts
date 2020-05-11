@@ -4,7 +4,6 @@ import { ContentProviderMapping, ContentProvider } from "./ContentProvider";
 import { FileSystemProvider } from "./providers/fs-provider";
 import path from "path";
 import fs from "fs";
-import util from "util";
 
 export interface ObjectProviderOptions
 {
@@ -21,6 +20,12 @@ export type ObjectProviderMapping = Record<string, ObjectProviderOptions>;
 export interface ObjectOptions
 {
     providers?: ObjectProviderMapping | ObjectProviderMapping[];
+}
+
+export interface PathOptions
+{
+    content?: string;
+    data?: string;
 }
 
 export class Config
@@ -42,10 +47,11 @@ export class Config
 
     dataDeepMerge: true | false = false;
     contentProviders: ContentProviderMapping = [];
-    contentProviderTypes: Record<string, (options: any) => ContentProvider> = {
+    contentProviderTypes: Record<string, (options: any, config: Config) => ContentProvider> = {
         "FileSystemProvider": FileSystemProvider.fromOptions,
         "fs": FileSystemProvider.fromOptions
     };
+    globalData: any = {};
 
     // TODO: ditch this, it's bad.
     get fileTransformers(): Record<string, FileContentTransformer> {
@@ -59,7 +65,7 @@ export class Config
         if(this.contentProviders.length > 0)
             return this.contentProviders;
         return [
-            { "/": new FileSystemProvider(this.rootDirectory) }
+            { "/": new FileSystemProvider(this.rootDirectory, this) }
         ]
     }
 
@@ -102,11 +108,12 @@ export class Config
                         throw `Missing provider type from mapping for permalink "${permalink}"`;
                     if(!(providerOptions.type in this.contentProviderTypes))
                         throw `Provider type "${providerOptions.type}" is not registered.`;
-                    this.registerContentProvider(permalink, this.contentProviderTypes[providerOptions.type](providerOptions));
+                    this.registerContentProvider(permalink, this.contentProviderTypes[providerOptions.type](providerOptions, this));
                 }
             }
         }
-        // TODO: more options
+        // TODO: options
+        // TODO: global data (resolving paths and merging according to options)
         return this;
     }
 }

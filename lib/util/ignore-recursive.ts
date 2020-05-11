@@ -1,17 +1,20 @@
 import ignore, { Ignore } from 'ignore';
-import { opendirSync, Dir, Dirent, statSync, readFileSync, realpathSync } from 'fs';
-import { join, resolve, relative } from 'path';
+import { opendirSync, Dir, Dirent, statSync, readFileSync, realpathSync, existsSync } from 'fs';
+import { join, resolve, relative, isAbsolute, posix } from 'path';
 
 export interface Options
 {
     ignoreFiles: string[];
     follow?: boolean;
     defaultIgnoreRules?: string[];
+    ignoreRules?: string[];
     encoding?: string;
 }
 
 export async function* ignoreWalk(root: string, options: Options): AsyncGenerator<string, void, undefined>
 {
+    if(!isAbsolute(root))
+        throw `Path must be absolute: ${root}`;
     options.defaultIgnoreRules = options.defaultIgnoreRules || [
         '.*.swp',
         '._*',
@@ -21,7 +24,9 @@ export async function* ignoreWalk(root: string, options: Options): AsyncGenerato
     ];
     options.encoding = options.encoding || 'utf-8';
 
-    const baseIgnore = ignore().add(options.defaultIgnoreRules).add(options.ignoreFiles);
+    const baseIgnore = ignore().add(options.defaultIgnoreRules)
+                                .add(options.ignoreRules || [])
+                                .add(options.ignoreFiles);
     const stack: { ignore: Ignore | null, path: string, dir: Dir }[] = [
         {
             ignore: null,
@@ -47,36 +52,25 @@ export async function* ignoreWalk(root: string, options: Options): AsyncGenerato
                                         : baseIgnore);
             for(const name of options.ignoreFiles)
             {
-                try
-                {
-                    const path = join(top.path, name);
-                    if(statSync(path).isFile())
-                        top.ignore.add(readFileSync(path, options.encoding));
-                } catch
-                {
-                    // don't do anything if the file doesn't exist
-                }
+                const path = join(root, top.path, name);
+                if(existsSync(path) && statSync(path).isFile())
+                    top.ignore.add(readFileSync(path, options.encoding));
             }
         }
         for(;null != entry; entry = top.dir.readSync())
         {
-            let path = join(top.path, entry.name);
+            const path = posix.join(top.path, entry.name) + (entry.isDirectory() ? '/' : '');
             if(top.ignore.ignores(path))
                 continue;
-            if(entry.isSymbolicLink())
-                path = realpathSync(path);
+            const absPath = resolve(root, path);
             if(entry.isDirectory())
             {
-                stack.push({
-                    dir: opendirSync(path),
-                    path: relative(root, path),
-                    ignore: null
-                });
+                stack.push({ path, dir: opendirSync(absPath), ignore: null });
                 continue outer;
             }
             if(!entry.isFile())
-                throw `unknown entry type: ${path}`;
-            yield resolve(root, path);
+                throw `unknown entry type: ${absPath}`;
+            yield absPath;
         }
         stack.pop();
     }

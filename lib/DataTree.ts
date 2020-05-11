@@ -32,7 +32,7 @@ export class DataTree
         return this.computedData;
     }
 
-    setData(newData: any, behaviour: 'shallowMerge' | 'deepMerge' | 'replace' = 'replace'): void
+    importData(newData: any, behaviour: 'shallowMerge' | 'deepMerge' | 'replace' = 'replace'): void
     {
         switch(behaviour)
         {

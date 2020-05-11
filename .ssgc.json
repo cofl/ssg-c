@@ -1,5 +1,0 @@
-{
-    "providers": {
-        "/": { "type": "fs", "root": "test" }
-    }
-}
