@@ -1,9 +1,9 @@
-import { ContentRoot, ContentTree } from "./ContentItem";
-import { Config } from "./Config";
+import { ContentTree } from "./ContentItem";
+import { SSGC } from "./SSGC";
 
 export type ContentProviderMapping = Record<string, ContentProvider>[];
 
 export interface ContentProvider
 {
-    populate(root: ContentRoot, base: ContentTree, config: Config): Promise<ContentProviderMapping>;
+    populate(ssgc: SSGC, base: ContentTree): Promise<ContentProviderMapping>;
 }

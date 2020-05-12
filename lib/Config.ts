@@ -33,16 +33,22 @@ export class Config
     readonly rootDirectory: string;
     readonly configTokenFragment: string;
     readonly defaultEncoding: BufferEncoding;
+    readonly pathPrefix: string;
+    readonly locale: string | undefined;
 
     constructor(options: {
         rootDirectory?: string,
         configTokenFragment?: string,
-        defaultEncoding?: BufferEncoding
+        defaultEncoding?: BufferEncoding,
+        pathPrefix?: string,
+        locale?: string
     } = {})
     {
         this.rootDirectory = options.rootDirectory || process.cwd();
         this.configTokenFragment = options.configTokenFragment || 'ssgc';
         this.defaultEncoding = options.defaultEncoding || 'utf-8';
+        this.pathPrefix = options.pathPrefix || '';
+        this.locale = options.locale;
     }
 
     dataDeepMerge: true | false = false;

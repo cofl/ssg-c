@@ -5,24 +5,12 @@ export abstract class ContentItem
 {
     private _permalink: string;
     private _parent: ContentTree | null = null;
-    readonly root: ContentRoot;
     readonly data: DataTree;
 
-    constructor(data: DataTree, root: ContentRoot | null, permalink: string)
+    constructor(data: DataTree, permalink: string)
     {
         this.data = data;
         this._permalink = permalink;
-        if(this instanceof ContentRoot)
-            this.root = this;
-        else if(null === root)
-            throw "Must supply argument root to ContentItem constructor if not a ContentRoot."
-        else
-        {
-            this.root = root;
-            this._parent = root.getOrCreateTree(dirname(permalink));
-        }
-        if(!this.data.parent && this._parent)
-            this.data.parent = this._parent.data;
     }
 
     abstract render(): void;
@@ -33,13 +21,18 @@ export abstract class ContentItem
         this._permalink = newLink;
     }
     get parent(): ContentTree | null { return this._parent; }
+
+    __setParentInternal(newParent: ContentTree)
+    {
+        this._parent = newParent;
+    }
 }
 
 export class ContentTree extends ContentItem
 {
-    constructor(data: DataTree, root: ContentRoot | null, permalink: string)
+    constructor(data: DataTree, permalink: string)
     {
-        super(data, root, permalink);
+        super(data, permalink);
     }
     children: ContentItem[] = [];
 
@@ -50,37 +43,11 @@ export class ContentTree extends ContentItem
     }
 }
 
-type NotType<T, K> = T extends K ? never : T
 export class ContentRoot extends ContentTree
 {
     constructor(data: DataTree)
     {
-        super(data, null, '/');
-    }
-
-    private subtrees: Record<string, ContentTree> = {};
-    getOrCreateTree(link: string): ContentTree
-    {
-        if(!isAbsolute(link))
-            throw `Link must be absolute: ${link}`;
-        if(link === '/')
-            return this;
-        let tree = this.subtrees[link];
-        if(!tree)
-        {
-            tree = this.subtrees[link] = new ContentTree(new DataTree(), this, link);
-            tree.parent!.children.push(tree);
-            tree.data.parent = tree.parent!.data;
-        }
-        return tree;
-    }
-
-    addItem<T extends ContentItem>(item: T & NotType<T, ContentTree>): void
-    {
-        if(!item.permalink)
-            throw "Item must have a valid permalink."
-        const tree = this.getOrCreateTree(item.permalink);
-        tree.children.push(item);
+        super(data, '/');
     }
 }
 
@@ -88,11 +55,10 @@ export class ContentFile extends ContentItem
 {
     readonly filePath: string;
     content: string;
-    constructor(data: DataTree, root: ContentRoot, permalink: string, filePath: string, content: string)
+    constructor(data: DataTree, permalink: string, filePath: string, content: string)
     {
-        super(data, root, permalink);
+        super(data, permalink);
         this.filePath = filePath;
-        this.parent?.children.push(this);
         this.content = content;
     }
 
@@ -112,11 +78,10 @@ export class ContentFile extends ContentItem
 export class StaticContentFile extends ContentItem
 {
     readonly filePath: string;
-    constructor(root: ContentRoot, permalink: string, filePath: string)
+    constructor(data: DataTree, permalink: string, filePath: string)
     {
-        super(new DataTree(), root, permalink);
+        super(data, permalink);
         this.filePath = filePath;
-        this.parent?.children.push(this);
     }
 
     render()

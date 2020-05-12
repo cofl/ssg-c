@@ -4,11 +4,13 @@ import deepmerge from "deepmerge";
 export class DataTree
 {
     parent: DataTree | null;
+    readonly path: string;
     private ownData: any;
     private computedData: any = null;
 
-    constructor(ownData: any = {}, parent: DataTree | null = null)
+    constructor(path: string, ownData: any = {}, parent: DataTree | null = null)
     {
+        this.path = path;
         this.ownData = ownData;
         this.parent = parent;
     }
