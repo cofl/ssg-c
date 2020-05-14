@@ -2,7 +2,8 @@
 
 1. Gather main config, register content transformers and providers.
 2. Populate Layouts. Default Layout = Static/No Change.
-3. Populate Content Tree, scraping frontmatter from supported/listed file types (set in config).
+3. Populate Data Map of data path -> data item, scraping frontmatter from supported/listed file types (set in config).
+    - Also populate temporary Content List, links content -> data
     - Register additional content transformers/providers if encountered.
         - for fs provider, if a new fs provider is encountered, stop processing
           and add that directory to the queue. The new provider can have a different
@@ -11,8 +12,10 @@
       get the content item from that transformer.
     - Follow layout chain to determine final extension for files.
     - Loop until queue of providers is empty.
-4. Apply tree transformers to content tree.
-5. Invoke Render on the root.
+4. Link Data Map -> Data Tree
+5. Build Content Tree from temporary Content List. Default permalinks from provider base + data path (?)
+6. Apply tree transformers to content tree.
+7. Invoke Render on the root.
     - walk the tree
     - apply pre-layout content transformers
     - apply layouts to items
