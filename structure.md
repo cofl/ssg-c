@@ -4,12 +4,7 @@
 2. Populate Layouts. Default Layout = Static/No Change.
 3. Populate Data Map of data path -> data item, scraping frontmatter from supported/listed file types (set in config).
     - Also populate temporary Content List, links content -> data
-    - Register additional content transformers/providers if encountered.
-        - for fs provider, if a new fs provider is encountered, stop processing
-          and add that directory to the queue. The new provider can have a different
-          config.
-    - If a file has an extension matching a "during population" content transformer,
-      get the content item from that transformer.
+    - If a file has an extension matching a "content provider", match data and content using that to populate return items.
     - Follow layout chain to determine final extension for files.
     - Loop until queue of providers is empty.
 4. Link Data Map -> Data Tree

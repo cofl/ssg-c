@@ -34,15 +34,9 @@ export class DataTree
         return this.computedData;
     }
 
-    importData(newData: any, behaviour: 'shallowMerge' | 'deepMerge' | 'replace' = 'replace'): void
+    importData(config: Config, newData: object | DataTree): void
     {
-        switch(behaviour)
-        {
-            case 'shallowMerge': this.ownData = { ...this.ownData, ...newData }; break;
-            case 'deepMerge': this.ownData = deepmerge(this.ownData, newData); break;
-            default:
-                this.ownData = newData;
-        }
+        this.ownData = config.merge(this.ownData, newData instanceof DataTree ? newData.ownData : newData);
         this.clearComputed(false);
     }
 }

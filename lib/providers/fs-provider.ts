@@ -1,15 +1,15 @@
 import { StaticContentFile, ContentFile, ContentTree } from "../ContentItem";
-import { ContentProvider, ContentProviderMapping } from "../ContentProvider";
+import { Provider, ProviderMapping, ProviderItemType } from "../Provider";
 import { Options, ignoreWalk } from "../util/ignore-recursive";
 import { join, relative, extname, isAbsolute, resolve, basename } from "path";
 
 import graymatter from "gray-matter";
 import { Config } from "../Config";
-import { DataTree } from "../DataTree";
 import { existsSync, statSync } from "fs";
 import { SSGC } from "../SSGC";
+import { DataTree } from "../DataTree";
 
-export class FileSystemProvider implements ContentProvider
+export class FileSystemProvider implements Provider
 {
     readonly path: string;
     readonly ignoreOptions: Options;
@@ -36,7 +36,7 @@ export class FileSystemProvider implements ContentProvider
         return new FileSystemProvider(resolved, config, options.ignoreOptions);
     }
 
-    async populate(ssgc: SSGC, base: ContentTree): Promise<ContentProviderMapping>
+    async populate(ssgc: SSGC, base: ContentTree): Promise<ProviderMapping>
     {
         for await (const filePath of ignoreWalk(this.path, this.ignoreOptions))
         {
@@ -45,7 +45,6 @@ export class FileSystemProvider implements ContentProvider
             // tree using the permalinks, which are generated from the relative path
             // if one is not explicitly provided in the data.
             const permalink = join(base.permalink, relative(this.path, filePath)).replace(/\\/g, '/');
-            const filename = basename(filePath);
             // TODO: if config file, add as data item instead of content item.
             // TODO: get a dataPath too, not just a permalink
             let transformer = ssgc.config.fileTransformers[extname(permalink)];
@@ -65,5 +64,26 @@ export class FileSystemProvider implements ContentProvider
         }
 
         return [];
+    }
+
+    async *getItems(ssgc: SSGC, basePath: string): AsyncGenerator<ProviderItemType, void, undefined>
+    {
+        for await(const filePath of ignoreWalk(this.path, this.ignoreOptions))
+        {
+            const relativePath = relative(this.path, filePath);
+            const dataPath = join(basePath, relativePath).replace(/\\/g, '/');
+            const fileName = basename(filePath);
+            const transformer = ssgc.config.fileTransformers[extname(fileName)];
+            if(transformer?.fileType === 'TextWithFrontmatter')
+            {
+                //TODO: expose gray-matter options in provider or something
+                const { data, content } = graymatter.read(filePath);
+                yield new DataTree(dataPath, data);
+                yield { filePath, content };
+            } else
+            {
+                yield { filePath };
+            }
+        }
     }
 }

@@ -39,28 +39,58 @@ export class SSGC
         // TODO: register plugins/transformers from config
     }
 
-    async build()
+    private async gatherItems(): Promise<any[]>
     {
-        // TODO: populate layouts
-        // TODO: populate content tree
-        /*
-         * Populate content tree.
-         */
-        const contentProviders = this.config.contentProvidersOrDefault.slice();
-        for(let i = 0; i < contentProviders.length; i += 1)
+        // TODO: how to prevent config from poisoning other providers?
+        // ideas:
+        //      - explicit data parent
+        //      - separate data maps/trees for each provider (no way to link config then though)
+        //      - namespacing in data path: fs::test::/content/index.md, etc
+        //          - possible to ignore namespace when linking unless overriden,
+        // really, this is a question about how different providers work together.
+        //      - totally in the same space?
+        //      - in the same result space, but not the same source space?
+        //      - completely isolated?
+        // is it worth it to have multiple providers?
+        //      - pro: extensible, possible to do everything in code
+        //      - pro: can import from external data source
+        //      - con: complex (see here)
+        //      - con: is it really necessary to, e.g., pull data from a SQL database?
+        const contentList: any[] = [];
+        const providerMappings = this.config.providersOrDefault.slice();
+        for(const mapping of providerMappings)
+        for(const basePath in mapping)
         {
-            const providerMapping = contentProviders[i];
-            for(const basePath in providerMapping)
+            const provider = mapping[basePath];
+            for await (const item of provider.getItems(this, basePath))
             {
-                const provider = providerMapping[basePath];
-                const base = this.getOrCreateTree(basePath);
-                if(null === base)
-                    throw `Cannot find tree at: ${basePath}`;
-                const newProviders = await provider.populate(this, base);
-                contentProviders.push(...newProviders);
+                if(item instanceof DataTree)
+                {
+                    if(item.path in this.dataMap)
+                        this.dataMap[item.path].importData(this.config, item);
+                    else
+                        this.dataMap[item.path] = item;
+                } else
+                {
+                    contentList.push(item);
+                }
             }
         }
+        return contentList;
+    }
 
+    private async linkDataTree(dataItemMap: {})
+    {
+        // TODO
+    }
+
+    async build()
+    {
+        const contentList = await this.gatherItems();
+        console.log(this.dataMap);
+        // TODO: populate layouts
+        const dataTree = await this.linkDataTree(this.dataMap);
+        // TODO: build content tree
         // TODO: apply tree transformers
         this.contentRoot.render(); // TODO: pass layouts, content transformers?
                                    // TODO: use processing stack instead of recursion?

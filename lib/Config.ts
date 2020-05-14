@@ -1,9 +1,10 @@
 import { FileContentTransformer } from "./ContentTransformer";
 import MarkdownContentTransformer from "./transformers/md-transformer";
-import { ContentProviderMapping, ContentProvider } from "./ContentProvider";
+import { Provider, ProviderMapping, ProviderProviderFn } from "./Provider";
 import { FileSystemProvider } from "./providers/fs-provider";
 import path from "path";
 import fs from "fs";
+import deepmerge from "deepmerge";
 
 export interface ObjectProviderOptions
 {
@@ -52,8 +53,8 @@ export class Config
     }
 
     dataDeepMerge: true | false = false;
-    contentProviders: ContentProviderMapping = [];
-    contentProviderTypes: Record<string, (options: any, config: Config) => ContentProvider> = {
+    providers: ProviderMapping = [];
+    providerTypes: Record<string, ProviderProviderFn> = {
         "FileSystemProvider": FileSystemProvider.fromOptions,
         "fs": FileSystemProvider.fromOptions
     };
@@ -62,30 +63,40 @@ export class Config
     // TODO: ditch this, it's bad.
     get fileTransformers(): Record<string, FileContentTransformer> {
         return {
-            "md": new MarkdownContentTransformer()
+            ".md": new MarkdownContentTransformer()
         };
     }
 
-    get contentProvidersOrDefault(): ContentProviderMapping
+    get providersOrDefault(): ProviderMapping
     {
-        if(this.contentProviders.length > 0)
-            return this.contentProviders;
+        if(this.providers.length > 0)
+            return this.providers;
         return [
             { "/": new FileSystemProvider(this.rootDirectory, this) }
         ]
     }
 
-    registerProviderType(providerName: string, constructorFn: (options: any) => ContentProvider): Config
+    merge(...objects: object[])
     {
-        if(providerName in this.contentProviderTypes)
+        if(!this.dataDeepMerge)
+            return Object.assign({}, objects);
+        let result = {};
+        for(const obj of objects)
+            result = deepmerge(result, obj);
+        return result;
+    }
+
+    registerProviderType(providerName: string, providerFn: ProviderProviderFn): Config
+    {
+        if(providerName in this.providerTypes)
             throw `Cannot register duplicate provider type ${providerName}`;
-        this.contentProviderTypes[providerName] = constructorFn;
+        this.providerTypes[providerName] = providerFn;
         return this;
     }
 
-    registerContentProvider(permalink: string, provider: ContentProvider): Config
+    registerContentProvider(permalink: string, provider: Provider): Config
     {
-        this.contentProviders.push({ [permalink]: provider });
+        this.providers.push({ [permalink]: provider });
         return this;
     }
 
@@ -112,9 +123,9 @@ export class Config
                     const providerOptions = providerMapping[permalink];
                     if(!isObjectProviderOptions(providerOptions))
                         throw `Missing provider type from mapping for permalink "${permalink}"`;
-                    if(!(providerOptions.type in this.contentProviderTypes))
+                    if(!(providerOptions.type in this.providerTypes))
                         throw `Provider type "${providerOptions.type}" is not registered.`;
-                    this.registerContentProvider(permalink, this.contentProviderTypes[providerOptions.type](providerOptions, this));
+                    this.registerContentProvider(permalink, this.providerTypes[providerOptions.type](providerOptions, this));
                 }
             }
         }
