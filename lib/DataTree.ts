@@ -4,6 +4,8 @@ import deepmerge from "deepmerge";
 export class DataTree
 {
     parent: DataTree | null;
+    // TODO: associated page/content item?
+    // TODO: children?
     readonly path: string;
     private ownData: any;
     private computedData: any = null;
@@ -13,13 +15,6 @@ export class DataTree
         this.path = path;
         this.ownData = ownData;
         this.parent = parent;
-    }
-
-    clearComputed(alsoClearParents : true | false = true)
-    {
-        this.computedData = null;
-        if(alsoClearParents)
-            this.parent?.clearComputed(alsoClearParents);
     }
 
     get(config: Config): any
@@ -37,6 +32,6 @@ export class DataTree
     importData(config: Config, newData: object | DataTree): void
     {
         this.ownData = config.merge(this.ownData, newData instanceof DataTree ? newData.ownData : newData);
-        this.clearComputed(false);
+        this.computedData = null;
     }
 }

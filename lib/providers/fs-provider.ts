@@ -36,42 +36,13 @@ export class FileSystemProvider implements Provider
         return new FileSystemProvider(resolved, config, options.ignoreOptions);
     }
 
-    async populate(ssgc: SSGC, base: ContentTree): Promise<ProviderMapping>
-    {
-        for await (const filePath of ignoreWalk(this.path, this.ignoreOptions))
-        {
-            // TODO FOR REAL: just emit content items, don't add them to a tree until all
-            // items have been received and the data tree built. Then, build the content
-            // tree using the permalinks, which are generated from the relative path
-            // if one is not explicitly provided in the data.
-            const permalink = join(base.permalink, relative(this.path, filePath)).replace(/\\/g, '/');
-            // TODO: if config file, add as data item instead of content item.
-            // TODO: get a dataPath too, not just a permalink
-            let transformer = ssgc.config.fileTransformers[extname(permalink)];
-            if(transformer?.fileType === 'TextWithFrontmatter')
-            {
-                //TODO: expose gray-matter options in provider or something
-                const { data, content } = graymatter.read(filePath);
-                const dataTree = ssgc.getOrCreateData(permalink, data);
-                const item = new ContentFile(dataTree, permalink, filePath, content);
-                ssgc.addItem(item);
-            } else
-            {
-                const dataTree = ssgc.getOrCreateData(permalink);
-                const item = new StaticContentFile(dataTree, permalink, filePath);
-                ssgc.addItem(item);
-            }
-        }
-
-        return [];
-    }
-
     async *getItems(ssgc: SSGC, basePath: string): AsyncGenerator<ProviderItemType, void, undefined>
     {
         for await(const filePath of ignoreWalk(this.path, this.ignoreOptions))
         {
             const relativePath = relative(this.path, filePath);
             const dataPath = join(basePath, relativePath).replace(/\\/g, '/');
+            // TODO: use content providers to generate a data or content item from a file.
             const fileName = basename(filePath);
             const transformer = ssgc.config.fileTransformers[extname(fileName)];
             if(transformer?.fileType === 'TextWithFrontmatter')
