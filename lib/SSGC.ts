@@ -35,29 +35,21 @@ export class SSGC
         // TODO: register plugins/transformers from config
     }
 
-    private async gatherItems(): Promise<any[]>
+    private async gatherItems()
     {
-        const contentList: any[] = [];
-        const providerMappings = this.config.providersOrDefault.slice();
+        const providerMappings = this.config.contentProvidersOrDefault.slice();
         for(const mapping of providerMappings)
         for(const basePath in mapping)
         {
             const provider = mapping[basePath];
             for await (const item of provider.getItems(this, basePath))
             {
-                if(item instanceof DataTree)
-                {
-                    if(item.path in this.dataMap)
-                        this.dataMap[item.path].importData(this.config, item);
-                    else
-                        this.dataMap[item.path] = item;
-                } else
-                {
-                    contentList.push(item);
-                }
+                if(item.path in this.dataMap)
+                    this.dataMap[item.path].importData(this.config, item);
+                else
+                    this.dataMap[item.path] = item;
             }
         }
-        return contentList;
     }
 
     private async linkDataTree()
@@ -69,14 +61,18 @@ export class SSGC
             const pathStack = [ path ];
             while(pathStack.length > 0)
             {
-                const parentPath = dirname(pathStack[pathStack.length - 1]);
+                const path = pathStack.pop()!;
+                const parentPath = dirname(path);
                 if(!(parentPath in this.dataMap))
                 {
+                    pathStack.push(path);
                     pathStack.push(parentPath);
                     continue;
                 }
-                const path = pathStack.pop()!;
-                this.dataMap[path] = new DataTree(path, {}, this.dataMap[parentPath]);
+                if(path in this.dataMap)
+                    this.dataMap[path].parent = this.dataMap[parentPath];
+                else
+                    this.dataMap[path] = new DataTree(path, {}, this.dataMap[parentPath]);
             }
         }
     }

@@ -1,9 +1,7 @@
-import { StaticContentFile, ContentFile, ContentTree } from "../ContentItem";
-import { Provider, ProviderMapping, ProviderItemType } from "../Provider";
+import { Provider } from "../Provider";
 import { Options, ignoreWalk } from "../util/ignore-recursive";
-import { join, relative, extname, isAbsolute, resolve, basename } from "path";
+import { join, relative, isAbsolute, resolve } from "path";
 
-import graymatter from "gray-matter";
 import { Config } from "../Config";
 import { existsSync, statSync } from "fs";
 import { SSGC } from "../SSGC";
@@ -36,24 +34,19 @@ export class FileSystemProvider implements Provider
         return new FileSystemProvider(resolved, config, options.ignoreOptions);
     }
 
-    async *getItems(ssgc: SSGC, basePath: string): AsyncGenerator<ProviderItemType, void, undefined>
+    async *getItems(ssgc: SSGC, basePath: string): AsyncGenerator<DataTree, void, undefined>
     {
         for await(const filePath of ignoreWalk(this.path, this.ignoreOptions))
         {
             const relativePath = relative(this.path, filePath);
             const dataPath = join(basePath, relativePath).replace(/\\/g, '/');
-            // TODO: use content providers to generate a data or content item from a file.
-            const fileName = basename(filePath);
-            const transformer = ssgc.config.fileTransformers[extname(fileName)];
-            if(transformer?.fileType === 'TextWithFrontmatter')
+            for(const provider of ssgc.config.dataProviders)
             {
-                //TODO: expose gray-matter options in provider or something
-                const { data, content } = graymatter.read(filePath);
-                yield new DataTree(dataPath, data);
-                yield { filePath, content };
-            } else
-            {
-                yield { filePath };
+                if(provider.shouldProcess(filePath, dataPath, ssgc.config))
+                {
+                    yield provider.process(filePath, dataPath, ssgc.config);
+                    break;
+                }
             }
         }
     }

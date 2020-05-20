@@ -1,20 +1,20 @@
 import { Config } from "./Config";
-import deepmerge from "deepmerge";
+import { Page } from "./Page";
 
 export class DataTree
 {
-    parent: DataTree | null;
-    // TODO: associated page/content item?
-    // TODO: children?
+    parent?: DataTree;
+    page?: Page;
     readonly path: string;
     private ownData: any;
     private computedData: any = null;
 
-    constructor(path: string, ownData: any = {}, parent: DataTree | null = null)
+    constructor(path: string, ownData: any = {}, parent?: DataTree)
     {
         this.path = path;
         this.ownData = ownData;
-        this.parent = parent;
+        if(undefined !== parent)
+            this.parent = parent;
     }
 
     get(config: Config): any
@@ -22,16 +22,28 @@ export class DataTree
         if(null !== this.computedData)
             return this.computedData;
         const parentData = this.parent?.get(config) || {};
-        if(config.dataDeepMerge)
-            this.computedData = deepmerge(parentData, this.ownData);
-        else
-            this.computedData = { ...parentData, ...this.ownData };
+        this.computedData = config.merge(parentData, this.ownData);
         return this.computedData;
     }
 
     importData(config: Config, newData: object | DataTree): void
     {
-        this.ownData = config.merge(this.ownData, newData instanceof DataTree ? newData.ownData : newData);
         this.computedData = null;
+        if(newData instanceof DataTree)
+        {
+            console.log(newData);
+            this.ownData = config.merge(this.ownData, newData.ownData);
+            this.page = this.page || newData.page;
+        } else
+        {
+            this.ownData = config.merge(this.ownData, newData);
+        }
+    }
+
+    withContent(page: Page): DataTree
+    {
+        this.page = page;
+        this.page.data = this;
+        return this;
     }
 }
