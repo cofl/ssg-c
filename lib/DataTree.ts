@@ -5,6 +5,7 @@ export class DataTree
 {
     parent?: DataTree;
     page?: Page;
+    children: DataTree[] = [];
     readonly path: string;
     private ownData: any;
     private computedData: any = null;

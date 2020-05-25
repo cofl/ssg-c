@@ -1,16 +1,27 @@
 import { Provider } from "../Provider";
 import { Options, ignoreWalk } from "../util/ignore-recursive";
-import { join, relative, isAbsolute, resolve } from "path";
+import { dirname, join, relative, isAbsolute, resolve } from "path";
 
 import { Config } from "../Config";
 import { existsSync, statSync } from "fs";
 import { SSGC } from "../SSGC";
 import { DataTree } from "../DataTree";
 
+export interface FileSystemProviderFromOptionsType
+{
+    basePath?: string;
+    root?: string; // alias for basePath
+    ignoreOptions?: Options;
+}
+
 export class FileSystemProvider implements Provider
 {
     readonly path: string;
     readonly ignoreOptions: Options;
+
+    private readonly dataRoot: DataTree = new DataTree('/');
+    private readonly dataMap: Record<string, DataTree> = {};
+
     constructor(basePath: string, config: Config, ignoreOptions?: Options)
     {
         if(!isAbsolute(basePath))
@@ -19,9 +30,10 @@ export class FileSystemProvider implements Provider
         this.ignoreOptions = ignoreOptions || {
             ignoreFiles: [ `.${config.configTokenFragment}-ignore` ]
         };
+        this.dataMap[this.dataRoot.path] = this.dataRoot;
     }
 
-    static fromOptions(options: any, config: Config): FileSystemProvider
+    static fromOptions(options: FileSystemProviderFromOptionsType, config: Config): FileSystemProvider
     {
         const root = options.basePath || options.root;
         if(!root)
@@ -44,10 +56,54 @@ export class FileSystemProvider implements Provider
             {
                 if(provider.shouldProcess(filePath, dataPath, ssgc.config))
                 {
+                    // delegate processing frontmatter/data to the file provider
                     yield provider.process(filePath, dataPath, ssgc.config);
                     break;
                 }
             }
         }
+    }
+
+    async process(ssgc: SSGC, basePath: string): Promise<void>
+    {
+        for await(const item of this.getItems(ssgc, basePath))
+        {
+            // add the item to the data map
+            if(item.path in this.dataMap)
+                this.dataMap[item.path].importData(ssgc.config, item);
+            else
+                this.dataMap[item.path] = item;
+
+            // if it's at the root, don't try to link to the parent.
+            if(item.path === '/')
+                continue;
+
+            // link to parent
+            const pathStack = [ item.path ];
+            while(pathStack.length > 0)
+            {
+                const path = pathStack.pop()!;
+                const parentPath = dirname(path);
+                if(!(parentPath in this.dataMap))
+                {
+                    // if the parent doesn't exist, push the current dir for re-visiting, and the parent.
+                    pathStack.push(path);
+                    pathStack.push(parentPath);
+                    continue;
+                }
+                // if we're at a datatree that already exists, just link
+                if(path in this.dataMap)
+                    this.dataMap[path].parent = this.dataMap[parentPath];
+                else
+                    // otherwise create
+                    this.dataMap[path] = new DataTree(path, {}, this.dataMap[parentPath]);
+                // and add the current path as a child of its parent.
+                this.dataMap[path].parent!.children.push(this.dataMap[path]);
+            }
+        }
+        // TODO: pagination
+        // TODO: all function-like properties have to be resolved to scalars before createPage
+        // TODO: createPage
+        console.log(this.dataMap);
     }
 }

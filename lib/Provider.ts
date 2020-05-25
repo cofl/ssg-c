@@ -7,4 +7,5 @@ export type ProviderProviderFn = (options: any, config: Config) => Provider;
 export interface Provider
 {
     getItems(ssgc: SSGC, basePath: string): AsyncGenerator<DataTree, void, undefined>;
+    process(ssgc: SSGC, basePath: string): Promise<void>;
 }
