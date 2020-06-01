@@ -6,11 +6,18 @@ import { FileSystemTemplateProvider } from "./Providers/FileSystemTemplateProvid
 export default class Config
 {
     readonly rootDirectory: string;
+    readonly defaultEncoding: BufferEncoding;
+    readonly locale: string | undefined;
+
     dataProviders: Record<string, DataProvider>[] = [];
     templateProviders: TemplateProvider[] = [];
-    constructor(path: string)
+    doDeepMerge: boolean = false;
+
+    constructor(path: string, defaultEncoding?: BufferEncoding, locale?: string)
     {
         this.rootDirectory = path || process.cwd();
+        this.defaultEncoding = defaultEncoding || 'utf-8';
+        this.locale = locale;
     }
     // TODO
 
