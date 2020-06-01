@@ -1,7 +1,6 @@
 import fs from "fs";
 import arg from "arg";
-import { Config } from "./Config";
-import { SSGC } from "./SSGC";
+import { SSGC, Config } from "./Config";
 
 /* args */
 const args = arg({

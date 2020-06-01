@@ -1,8 +1,8 @@
 import { Provider, ProviderMapping, ProviderProviderFn, DataProvider } from "./Provider";
 import path from "path";
 import fs from "fs";
-import deepmerge from "deepmerge";
 import { MarkdownFileDataProvider, StaticFileDataProvider } from "./DataProvider";
+import NewConfig from "../Config";
 
 export interface ObjectProviderOptions
 {
@@ -27,12 +27,31 @@ export interface PathOptions
     data?: string;
 }
 
+export class SSGC
+{
+    config: Config;
+    readonly collator: Intl.Collator;
+
+    constructor(config: Config)
+    {
+        this.config = config;
+        this.collator = new Intl.Collator(config.locale);
+    }
+
+    async build()
+    {
+        // TODO: remove
+    }
+}
+
 export class Config
 {
-    readonly rootDirectory: string;
+    private readonly newConfig: NewConfig;
+    asNewConfig(): NewConfig { return this.newConfig; }
+    get rootDirectory(): string { return this.newConfig.rootDirectory }
     readonly configTokenFragment: string;
-    readonly defaultEncoding: BufferEncoding;
-    readonly locale: string | undefined;
+    get defaultEncoding(): BufferEncoding { return this.newConfig.defaultEncoding; }
+    get locale(): string | undefined { return this.newConfig.locale; }
 
     constructor(options: {
         rootDirectory?: string,
@@ -41,10 +60,8 @@ export class Config
         locale?: string
     } = {})
     {
-        this.rootDirectory = options.rootDirectory || process.cwd();
+        this.newConfig = new NewConfig(options.rootDirectory || process.cwd(), options.defaultEncoding, options.locale);
         this.configTokenFragment = options.configTokenFragment || 'ssgc';
-        this.defaultEncoding = options.defaultEncoding || 'utf-8';
-        this.locale = options.locale;
     }
 
     dataDeepMerge: true | false = false;
@@ -66,16 +83,6 @@ export class Config
         return [
             //{ "/": new FileSystemProvider(this.rootDirectory, this) }
         ]
-    }
-
-    merge(...objects: object[])
-    {
-        if(!this.dataDeepMerge)
-            return Object.assign({}, objects);
-        let result = {};
-        for(const obj of objects)
-            result = deepmerge(result, obj);
-        return result;
     }
 
     registerProviderType(providerName: string, providerFn: ProviderProviderFn): Config
