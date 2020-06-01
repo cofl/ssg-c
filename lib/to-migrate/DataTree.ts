@@ -1,5 +1,4 @@
 import { Config } from "./Config";
-import { Page } from "./Page";
 
 export class DataTree
 {
@@ -47,4 +46,9 @@ export class DataTree
         this.page.data = this;
         return this;
     }
+}
+
+export class Page
+{
+    data?: DataTree;
 }

@@ -1,12 +1,11 @@
 import { Provider } from "../Provider";
-import { Options, ignoreWalk } from "../util/ignore-recursive";
+import ignoreWalk, { Options } from "../../util/IngoreWalk";
 import { dirname, join, relative, isAbsolute, resolve } from "path";
 
 import { Config } from "../Config";
 import { existsSync, statSync } from "fs";
 import { SSGC } from "../SSGC";
-import { DataTree } from "../DataTree";
-import { Page } from "../Page";
+import { DataTree, Page } from "../DataTree";
 
 export interface FileSystemProviderFromOptionsType
 {

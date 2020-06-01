@@ -1,8 +1,7 @@
-import DataProvider from "../DataProvider";
-import { DataTree } from "../DataTree";
-import { Page } from "../Page";
+import { DataTree, Page } from "../DataTree";
 import graymatter from "gray-matter";
 import { Config } from "../Config";
+import { DataProvider } from "../Provider";
 
 export class MarkdownPage extends Page {
     readonly filePath: string;

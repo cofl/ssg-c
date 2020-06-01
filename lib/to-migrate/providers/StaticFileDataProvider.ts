@@ -1,7 +1,6 @@
-import DataProvider from "../DataProvider";
-import { DataTree } from "../DataTree";
+import { DataProvider } from "../Provider";
+import { DataTree, Page } from "../DataTree";
 import { Config } from "../Config";
-import { Page } from "../Page";
 
 export class StaticFilePage extends Page
 {

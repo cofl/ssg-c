@@ -1,11 +1,8 @@
-import { FileContentTransformer } from "./ContentTransformer";
-import MarkdownContentTransformer from "./transformers/md-transformer";
-import { Provider, ProviderMapping, ProviderProviderFn } from "./Provider";
+import { Provider, ProviderMapping, ProviderProviderFn, DataProvider } from "./Provider";
 import { FileSystemProvider } from "./providers/fs-provider";
 import path from "path";
 import fs from "fs";
 import deepmerge from "deepmerge";
-import DataProvider from "./DataProvider";
 import MarkdownFileDataProvider from "./providers/MarkdownFileDataProvider";
 import StaticFileDataProvider from "./providers/StaticFileDataProvider";
 
@@ -66,13 +63,6 @@ export class Config
         MarkdownFileDataProvider,
         StaticFileDataProvider
     ];
-
-    // TODO: ditch this, it's bad.
-    get fileTransformers(): Record<string, FileContentTransformer> {
-        return {
-            ".md": new MarkdownContentTransformer()
-        };
-    }
 
     get contentProvidersOrDefault(): ProviderMapping
     {

@@ -1,26 +1,14 @@
 import { Config } from "./Config";
-import { ContentRoot, ContentItem, ContentTree } from "./ContentItem";
-import { DataTree } from "./DataTree";
-import { Page } from "./Page";
-
-export class DuplicatePermalinkError extends Error
-{
-    readonly item: ContentItem;
-    constructor(item: ContentItem)
-    {
-        super(item.permalink);
-        this.item = item;
-    }
-}
+import { DataTree, Page } from "./DataTree";
 
 export class SSGC
 {
     config: Config;
-    contentRoot: ContentRoot;
+    //contentRoot: ContentRoot;
     dataRoot: DataTree;
 
     layouts: Record<string, any> = {}; // TODO: map template
-    private contentMap: Record<string, ContentItem> = {};
+    //private contentMap: Record<string, ContentItem> = {};
     readonly collator: Intl.Collator;
 
     constructor(config: Config)
@@ -28,8 +16,8 @@ export class SSGC
         this.config = config;
         this.collator = new Intl.Collator(config.locale);
         this.dataRoot = new DataTree('/'); // TODO: inject global data.
-        this.contentRoot = new ContentRoot(this.dataRoot);
-        this.contentMap['/'] = this.contentRoot;
+        //this.contentRoot = new ContentRoot(this.dataRoot);
+        //this.contentMap['/'] = this.contentRoot;
         // TODO: register plugins/transformers from config
     }
 
@@ -52,8 +40,8 @@ export class SSGC
         // TODO: populate layouts
         await this.gatherItems();
         // TODO: apply tree transformers
-        this.contentRoot.render(); // TODO: pass layouts, content transformers?
-                                   // TODO: use processing stack instead of recursion?
+        //this.contentRoot.render(); // TODO: pass layouts, content transformers?
+                                     // TODO: use processing stack instead of recursion?
     }
 
     registerLayout(name: string, layout: any)
