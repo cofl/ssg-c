@@ -1,7 +1,7 @@
-import { DataTree, Page } from "../DataTree";
+import { DataTree, Page } from "./DataTree";
 import graymatter from "gray-matter";
-import { Config } from "../Config";
-import { DataProvider } from "../Provider";
+import { Config } from "./Config";
+import { DataProvider } from "./Provider";
 
 export class MarkdownPage extends Page {
     readonly filePath: string;
@@ -14,7 +14,7 @@ export class MarkdownPage extends Page {
     }
 }
 
-const MarkdownFileDataProvider: DataProvider = {
+export const MarkdownFileDataProvider: DataProvider = {
     shouldProcess: (filePath: string, dataPath: string, config: Config) =>
         (/\.(md|markdown)$/i).test(filePath),
     process: (filePath: string, dataPath: string, config: Config) =>
@@ -23,4 +23,19 @@ const MarkdownFileDataProvider: DataProvider = {
         return new DataTree(dataPath, data).withContent(new MarkdownPage(filePath, content));
     }
 };
-export default MarkdownFileDataProvider;
+
+export class StaticFilePage extends Page
+{
+    readonly filePath: string;
+    constructor(filePath: string)
+    {
+        super();
+        this.filePath = filePath;
+    }
+}
+
+export const StaticFileDataProvider: DataProvider = {
+    shouldProcess: (filePath: string, dataPath: string, config: Config) => true,
+    process: (filePath: string, dataPath: string, config: Config) =>
+        new DataTree(dataPath).withContent(new StaticFilePage(filePath)),
+};

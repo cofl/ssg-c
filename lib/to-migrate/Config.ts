@@ -1,10 +1,8 @@
 import { Provider, ProviderMapping, ProviderProviderFn, DataProvider } from "./Provider";
-import { FileSystemProvider } from "./providers/fs-provider";
 import path from "path";
 import fs from "fs";
 import deepmerge from "deepmerge";
-import MarkdownFileDataProvider from "./providers/MarkdownFileDataProvider";
-import StaticFileDataProvider from "./providers/StaticFileDataProvider";
+import { MarkdownFileDataProvider, StaticFileDataProvider } from "./DataProvider";
 
 export interface ObjectProviderOptions
 {
@@ -52,8 +50,8 @@ export class Config
     dataDeepMerge: true | false = false;
     contentProviders: ProviderMapping = [];
     providerTypes: Record<string, ProviderProviderFn> = {
-        "FileSystemProvider": FileSystemProvider.fromOptions,
-        "fs": FileSystemProvider.fromOptions
+        //"FileSystemProvider": FileSystemProvider.fromOptions,
+        //"fs": FileSystemProvider.fromOptions
     };
     globalData: any = {};
     dataProviders: DataProvider[] = [
@@ -66,7 +64,7 @@ export class Config
         if(this.contentProviders.length > 0)
             return this.contentProviders;
         return [
-            { "/": new FileSystemProvider(this.rootDirectory, this) }
+            //{ "/": new FileSystemProvider(this.rootDirectory, this) }
         ]
     }
 
