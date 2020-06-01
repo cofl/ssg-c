@@ -1,6 +1,7 @@
 import { Config } from "./Config";
 import { ContentRoot, ContentItem, ContentTree } from "./ContentItem";
 import { DataTree } from "./DataTree";
+import { Page } from "./Page";
 
 export class DuplicatePermalinkError extends Error
 {
@@ -18,8 +19,9 @@ export class SSGC
     contentRoot: ContentRoot;
     dataRoot: DataTree;
 
+    layouts: Record<string, any> = {}; // TODO: map template
     private contentMap: Record<string, ContentItem> = {};
-    private collator: Intl.Collator;
+    readonly collator: Intl.Collator;
 
     constructor(config: Config)
     {
@@ -36,16 +38,26 @@ export class SSGC
         const providerMappings = this.config.contentProvidersOrDefault.slice();
         for(const mapping of providerMappings)
             for(const basePath in mapping)
-                mapping[basePath].process(this, basePath);
+                for await (const page of mapping[basePath].process(this, basePath))
+                    this.insertPage(page);
+    }
+
+    private insertPage(page: Page)
+    {
+        // TODO: build content tree
     }
 
     async build()
     {
-        const contentList = await this.gatherItems();
         // TODO: populate layouts
-        // TODO: build content tree
+        await this.gatherItems();
         // TODO: apply tree transformers
         this.contentRoot.render(); // TODO: pass layouts, content transformers?
                                    // TODO: use processing stack instead of recursion?
+    }
+
+    registerLayout(name: string, layout: any)
+    {
+
     }
 }

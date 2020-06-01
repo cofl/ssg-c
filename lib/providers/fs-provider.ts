@@ -6,6 +6,7 @@ import { Config } from "../Config";
 import { existsSync, statSync } from "fs";
 import { SSGC } from "../SSGC";
 import { DataTree } from "../DataTree";
+import { Page } from "../Page";
 
 export interface FileSystemProviderFromOptionsType
 {
@@ -19,6 +20,7 @@ export class FileSystemProvider implements Provider
     readonly path: string;
     readonly ignoreOptions: Options;
 
+    private hasBuiltDataMap: boolean = false;
     private readonly dataRoot: DataTree = new DataTree('/');
     private readonly dataMap: Record<string, DataTree> = {};
 
@@ -64,46 +66,59 @@ export class FileSystemProvider implements Provider
         }
     }
 
-    async process(ssgc: SSGC, basePath: string): Promise<void>
+    async *process(ssgc: SSGC, basePath: string): AsyncGenerator<Page, void, undefined>
     {
-        for await(const item of this.getItems(ssgc, basePath))
+        if(!this.hasBuiltDataMap)
         {
-            // add the item to the data map
-            if(item.path in this.dataMap)
-                this.dataMap[item.path].importData(ssgc.config, item);
-            else
-                this.dataMap[item.path] = item;
-
-            // if it's at the root, don't try to link to the parent.
-            if(item.path === '/')
-                continue;
-
-            // link to parent
-            const pathStack = [ item.path ];
-            while(pathStack.length > 0)
+            for await(const item of this.getItems(ssgc, basePath))
             {
-                const path = pathStack.pop()!;
-                const parentPath = dirname(path);
-                if(!(parentPath in this.dataMap))
-                {
-                    // if the parent doesn't exist, push the current dir for re-visiting, and the parent.
-                    pathStack.push(path);
-                    pathStack.push(parentPath);
-                    continue;
-                }
-                // if we're at a datatree that already exists, just link
-                if(path in this.dataMap)
-                    this.dataMap[path].parent = this.dataMap[parentPath];
+                // add the item to the data map
+                if(item.path in this.dataMap)
+                    this.dataMap[item.path].importData(ssgc.config, item);
                 else
-                    // otherwise create
-                    this.dataMap[path] = new DataTree(path, {}, this.dataMap[parentPath]);
-                // and add the current path as a child of its parent.
-                this.dataMap[path].parent!.children.push(this.dataMap[path]);
+                    this.dataMap[item.path] = item;
+
+                // if it's at the root, don't try to link to the parent.
+                if(item.path === '/')
+                    continue;
+
+                // link to parent
+                const pathStack = [ item.path ];
+                while(pathStack.length > 0)
+                {
+                    const path = pathStack.pop()!;
+                    const parentPath = dirname(path);
+                    if(!(parentPath in this.dataMap))
+                    {
+                        // if the parent doesn't exist, push the current dir for re-visiting, and the parent.
+                        pathStack.push(path);
+                        pathStack.push(parentPath);
+                        continue;
+                    }
+                    // if we're at a datatree that already exists, just link
+                    if(path in this.dataMap)
+                        this.dataMap[path].parent = this.dataMap[parentPath];
+                    else
+                        // otherwise create
+                        this.dataMap[path] = new DataTree(path, {}, this.dataMap[parentPath]);
+                    // and add the current path as a child of its parent.
+                    this.dataMap[path].parent!.children.push(this.dataMap[path]);
+                }
             }
+            // TODO: pagination
+            // TODO: all function-like properties have to be resolved to scalars before createPage
+            this.hasBuiltDataMap = true;
         }
-        // TODO: pagination
-        // TODO: all function-like properties have to be resolved to scalars before createPage
         // TODO: createPage
+        const queue = [ this.dataRoot ];
         console.log(this.dataMap);
+        while(queue.length > 0)
+        {
+            const current = queue.shift()!;
+            if(current.page)
+                yield current.page;
+            for(const child of current.children.sort((a, b) => ssgc.collator.compare(a.path, b.path)))
+                queue.push(child);
+        }
     }
 }
