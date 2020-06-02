@@ -1,6 +1,8 @@
 import Config from "./Config";
-import { Template, DataRoot, TemplateTransformer, DataTransformer } from "./Providers";
+import { DataTransformer } from "./DataItem";
 import util from "util";
+import { TemplateTransformer, Template } from "./Template";
+import { DataRoot } from "./InternalDataNodes";
 
 export interface TemplateContext
 {

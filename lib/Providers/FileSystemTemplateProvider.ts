@@ -1,7 +1,7 @@
-import { TemplateProvider, Template } from "../Providers";
 import { TemplateContext } from "../Caisson";
 import ignoreWalk from "../util/IngoreWalk";
 import { basename } from "path";
+import { TemplateProvider, Template } from "../Template";
 
 export class FileSystemTemplateProvider implements TemplateProvider
 {

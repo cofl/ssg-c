@@ -1,6 +1,5 @@
-import { TemplateContext, DataContext } from "./Caisson";
-import { posix, basename } from "path";
-import { Transform } from "stream";
+import { posix } from "path";
+import { DataItem } from "./DataItem";
 
 function getPathAsComponents(path: string): string[]
 {
@@ -82,21 +81,14 @@ export class DataRoot implements DataInternalNode
     getInternalNodeAtPath: typeof getInternalNodeAtPath = getInternalNodeAtPath.bind(this);
 }
 
-export interface DataItem
+export class DataTree implements DataItem, DataInternalNode
 {
-    parent: DataInternalNode;
+    readonly parent: DataInternalNode;
     readonly data: any;
     readonly name: string;
     readonly path: string;
-}
+    readonly children: Record<string, DataItem> = {};
 
-export class DataTree implements DataItem, DataInternalNode
-{
-    parent: DataInternalNode;
-    data: any;
-    name: string;
-    path: string;
-    children: Record<string, DataItem> = {};
     constructor(parent: DataInternalNode, name: string, data: any = {})
     {
         this.parent = parent;
@@ -107,68 +99,4 @@ export class DataTree implements DataItem, DataInternalNode
 
     leaves: typeof leaves = leaves.bind(this);
     getInternalNodeAtPath: typeof getInternalNodeAtPath = getInternalNodeAtPath.bind(this);
-}
-
-export interface StaticContentItem extends DataItem
-{
-    readonly isStatic: true;
-    readonly filePath: string;
-}
-
-export interface ContentItem extends DataItem
-{
-    readonly isStatic: false;
-    content: string;
-    template?: Template;
-}
-
-export interface FileContentItem extends ContentItem
-{
-    readonly filePath: string;
-}
-
-export interface DataProvider
-{
-    populate(context: DataContext, root: DataInternalNode): void | Promise<void>;
-    // TODO
-}
-
-export interface DataTransformer
-{
-    applies(fileName: string): boolean,
-    transform(parent: DataInternalNode, path: string, filePath: string): ContentItem | StaticContentItem | Promise<ContentItem | StaticContentItem>
-}
-
-export const StaticDataTransformer: DataTransformer =
-{
-    applies(_fileName: string) { return true; },
-    transform(parent: DataInternalNode, path: string, filePath: string): StaticContentItem {
-        return {
-            isStatic: true,
-            path, parent, filePath,
-            data: {},
-            name: basename(filePath)
-        };
-    }
-};
-
-export interface Template
-{
-    parent?: Template;
-    readonly data: any;
-    readonly name: string;
-    process(item: ContentItem): void;
-    // TODO
-}
-
-export interface TemplateProvider
-{
-    getTemplates(context: TemplateContext): AsyncGenerator<Template, void, undefined>;
-    // TODO
-}
-
-export interface TemplateTransformer
-{
-    applies(fileName: string): boolean,
-    transform(filePath: string): Template | Promise<Template>
 }

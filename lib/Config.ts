@@ -1,8 +1,9 @@
-import { DataProvider, TemplateProvider, TemplateTransformer, DataTransformer } from "./Providers";
+import { DataProvider, DataTransformer } from "./DataItem";
 import { FileSystemProvider } from "./Providers/FileSystemProvider";
 import { join } from "path";
 import { FileSystemTemplateProvider } from "./Providers/FileSystemTemplateProvider";
 import { asMaybeArray } from "./util/Util";
+import { TemplateTransformer, TemplateProvider } from "./Template";
 
 interface Paths
 {
