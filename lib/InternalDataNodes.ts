@@ -13,16 +13,16 @@ function getPathAsComponents(path: string): string[]
 
 export interface DataInternalNode
 {
-    readonly path: string;
+    readonly dataPath: string;
     readonly children: Record<string, DataItem>;
     leaves(): Generator<DataItem, void, undefined>;
     getInternalNodeAtPath(path: string): DataInternalNode;
 }
 export function isDataInternalNode(item: any): item is DataInternalNode
 {
-    return item.path !== undefined &&
+    return item.dataPath !== undefined &&
             item.children !== undefined &&
-            item.leaves !== undefined && typeof item.leaves === 'function';
+            typeof item.leaves === 'function';
 }
 
 const leaves = function*(this: DataInternalNode): Generator<DataItem, void, undefined> {
@@ -43,7 +43,7 @@ const leaves = function*(this: DataInternalNode): Generator<DataItem, void, unde
 
 const getInternalNodeAtPath = function(this: DataInternalNode, path: string): DataInternalNode
 {
-    const components = getPathAsComponents(posix.resolve(this.path, path).substring(this.path.length));
+    const components = getPathAsComponents(posix.resolve(this.dataPath, path).substring(this.dataPath.length));
     let current: DataInternalNode = this;
     for(const name of components)
     {
@@ -53,7 +53,7 @@ const getInternalNodeAtPath = function(this: DataInternalNode, path: string): Da
             if(isDataInternalNode(child))
                 current = child;
             else
-                throw `Child "${name}" of "${current.path}" is not an internal node.`
+                throw `Child "${name}" of "${current.dataPath}" is not an internal node.`
         } else
         {
             // if it doesn't exist, create it.
@@ -68,13 +68,13 @@ const getInternalNodeAtPath = function(this: DataInternalNode, path: string): Da
 export class DataRoot implements DataInternalNode
 {
     readonly data: any;
-    readonly path: string;
+    readonly dataPath: string;
     readonly children: Record<string, DataItem> = {};
 
     constructor(data: any, path: string)
     {
         this.data = data;
-        this.path = path;
+        this.dataPath = path;
     }
 
     leaves: typeof leaves = leaves.bind(this);
@@ -86,7 +86,7 @@ export class DataTree implements DataItem, DataInternalNode
     readonly parent: DataInternalNode;
     readonly data: any;
     readonly name: string;
-    readonly path: string;
+    readonly dataPath: string;
     readonly children: Record<string, DataItem> = {};
 
     constructor(parent: DataInternalNode, name: string, data: any = {})
@@ -94,7 +94,7 @@ export class DataTree implements DataItem, DataInternalNode
         this.parent = parent;
         this.name = name;
         this.data = data;
-        this.path = posix.join(parent.path, name);
+        this.dataPath = posix.join(parent.dataPath, name);
     }
 
     leaves: typeof leaves = leaves.bind(this);

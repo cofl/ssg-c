@@ -32,3 +32,7 @@ export function asMaybeArray<T>(a: T | T[] | undefined): T[]
         return [];
     return [ a ];
 }
+
+export type MaybePromise<T> = T | Promise<T>;
+export type MaybeArray<T> = T | T[];
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<T>;

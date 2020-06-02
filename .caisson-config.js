@@ -1,9 +1,11 @@
 module.exports = {
-    "options": {
-        "deepMerge": true
+    providers: {
+        '/': 'test/content',
+        '/inner': 'test/other'
     },
+    doDeepMerge: true,
     paths: {
-        content: "test/content",
+        //content: "test/content",
         templates: "test/templates"
     }
 }

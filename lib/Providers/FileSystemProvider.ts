@@ -1,13 +1,14 @@
 import { DataProvider, StaticDataTransformer } from "../DataItem";
 import ignoreWalk from "../util/IngoreWalk";
-import { relative, join, dirname, basename } from "path";
+import { relative, join, dirname, basename, resolve } from "path";
 import { existsSync, statSync, realpathSync } from "fs";
 import { DataContext } from "../Caisson";
 import { DataInternalNode } from "../InternalDataNodes";
+import Config from "../Config";
 
 export class FileSystemProvider implements DataProvider
 {
-    readonly rootPath: string;
+    private rootPath: string;
     constructor(path: string)
     {
         if(!existsSync(path))
@@ -17,12 +18,17 @@ export class FileSystemProvider implements DataProvider
         this.rootPath = path;
     }
 
+    configure(config: Config): void
+    {
+        this.rootPath = resolve(config.rootDirectory, this.rootPath);
+    }
+
     async populate({ templates, dataTransformers }: DataContext, root: DataInternalNode): Promise<void>
     {
         for await(const filePath of ignoreWalk(this.rootPath, { ignoreFiles: [ '.caisson-ignore' ] }))
         {
             const relativePath = relative(this.rootPath, filePath).replace(/\\/g, '/');
-            const dataPath = join(root.path, relativePath).replace(/\\/g, '/');
+            const dataPath = join(root.dataPath, relativePath).replace(/\\/g, '/');
             const parent = root.getInternalNodeAtPath(dirname(relativePath));
 
             const transformer = dataTransformers.find(transformer => transformer.applies(basename(filePath))) || StaticDataTransformer;

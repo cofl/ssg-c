@@ -1,14 +1,20 @@
 import { TemplateContext } from "../Caisson";
 import ignoreWalk from "../util/IngoreWalk";
-import { basename } from "path";
+import { basename, resolve } from "path";
 import { TemplateProvider, Template } from "../Template";
+import Config from "../Config";
 
 export class FileSystemTemplateProvider implements TemplateProvider
 {
-    private readonly rootPath: string;
+    private rootPath: string;
     constructor(path: string)
     {
         this.rootPath = path;
+    }
+
+    configure(config: Config): void
+    {
+        this.rootPath = resolve(config.rootDirectory, this.rootPath);
     }
 
     async *getTemplates({ templateTransformers }: TemplateContext): AsyncGenerator<Template, void, undefined>
