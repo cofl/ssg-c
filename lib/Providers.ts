@@ -1,5 +1,6 @@
-import { Context_0, Context_1 } from "./Caisson";
-import { posix } from "path";
+import { TemplateContext, DataContext } from "./Caisson";
+import { posix, basename } from "path";
+import { Transform } from "stream";
 
 function getPathAsComponents(path: string): string[]
 {
@@ -110,11 +111,13 @@ export class DataTree implements DataItem, DataInternalNode
 
 export interface StaticContentItem extends DataItem
 {
+    readonly isStatic: true;
     readonly filePath: string;
 }
 
 export interface ContentItem extends DataItem
 {
+    readonly isStatic: false;
     content: string;
     template?: Template;
 }
@@ -126,9 +129,28 @@ export interface FileContentItem extends ContentItem
 
 export interface DataProvider
 {
-    populate(context: Context_1, root: DataInternalNode): void | Promise<void>;
+    populate(context: DataContext, root: DataInternalNode): void | Promise<void>;
     // TODO
 }
+
+export interface DataTransformer
+{
+    applies(fileName: string): boolean,
+    transform(parent: DataInternalNode, path: string, filePath: string): ContentItem | StaticContentItem | Promise<ContentItem | StaticContentItem>
+}
+
+export const StaticDataTransformer: DataTransformer =
+{
+    applies(_fileName: string) { return true; },
+    transform(parent: DataInternalNode, path: string, filePath: string): StaticContentItem {
+        return {
+            isStatic: true,
+            path, parent, filePath,
+            data: {},
+            name: basename(filePath)
+        };
+    }
+};
 
 export interface Template
 {
@@ -141,6 +163,12 @@ export interface Template
 
 export interface TemplateProvider
 {
-    getTemplates(context: Context_0): AsyncGenerator<Template, void, undefined>;
+    getTemplates(context: TemplateContext): AsyncGenerator<Template, void, undefined>;
     // TODO
+}
+
+export interface TemplateTransformer
+{
+    applies(fileName: string): boolean,
+    transform(filePath: string): Template | Promise<Template>
 }

@@ -1,19 +1,22 @@
 import Config from "./Config";
-import { Template, TemplateProvider, ContentItem, DataTree, DataRoot } from "./Providers";
+import { Template, DataRoot, TemplateTransformer, DataTransformer } from "./Providers";
 import util from "util";
 
-export interface Context_0
+export interface TemplateContext
 {
     readonly caisson: Caisson;
+    readonly templateTransformers: TemplateTransformer[];
 }
-export interface Context_1 extends Context_0
+export interface DataContext
 {
+    readonly caisson: Caisson;
     readonly templates: Record<string, Template>;
+    readonly dataTransformers: DataTransformer[];
 }
 
 export class Caisson
 {
-    private readonly config: Config;
+    readonly config: Config;
     // TODO
     constructor(config: Config)
     {
@@ -23,13 +26,17 @@ export class Caisson
 
     // Accessors for things in config that may be needed in contexts
     get rootDirectory(): string { return this.config.rootDirectory; }
+    get locale(): string | undefined { return this.config.locale; }
 
     async build()
     {
         // load and link templates
         const templates: Record<string, Template> = {};
         {
-            const context: Context_0 = { caisson: this };
+            const context: TemplateContext = {
+                caisson: this,
+                templateTransformers: this.config.templateTransformers
+            };
             for(const provider of this.config.templateProviders)
                 for await(const template of provider.getTemplates(context))
                     templates[template.name] = template;
@@ -46,12 +53,11 @@ export class Caisson
                     throw `Unrecognized template name "${parentName}".`;
             }
         }
-        console.log(templates);
 
         // inject into the data tree. The provider needs to do the linking itself.
         const data: DataRoot = new DataRoot({}, '/');
         {
-            const context: Context_1 = { caisson: this, templates };
+            const context: DataContext = { caisson: this, templates, dataTransformers: this.config.dataTransformers };
             for(const mappingElement of this.config.dataProviders)
                 for(const basePath in mappingElement)
                     await mappingElement[basePath].populate(context, data.getInternalNodeAtPath(basePath));

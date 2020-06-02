@@ -14,3 +14,21 @@ export function merge(config: Config, ...objects: object[]): object
         return objects.reduce((a, b) => deepmerge(a, b), {});
     return Object.assign({}, objects);
 }
+
+export function validateIsBufferEncoding(string: string | undefined): BufferEncoding | undefined
+{
+    if(!string)
+        return undefined;
+    if(Buffer.isEncoding(string))
+        return string;
+    throw `Unrecognized encoding type "${string}" provided.`;
+}
+
+export function asMaybeArray<T>(a: T | T[] | undefined): T[]
+{
+    if(Array.isArray(a))
+        return a;
+    if(a === undefined)
+        return [];
+    return [ a ];
+}
