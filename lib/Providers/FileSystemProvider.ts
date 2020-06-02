@@ -3,8 +3,9 @@ import ignoreWalk from "../util/IngoreWalk";
 import { relative, join, dirname, basename, resolve } from "path";
 import { existsSync, statSync, realpathSync } from "fs";
 import { DataContext } from "../Caisson";
-import { DataInternalNode } from "../InternalDataNodes";
+import { DataInternalNode } from "../DataTreeInternalNode";
 import Config from "../Config";
+import { isStaticContentItem } from "../DataTreeLeafNode";
 
 export class FileSystemProvider implements DataProvider
 {
@@ -28,12 +29,12 @@ export class FileSystemProvider implements DataProvider
         for await(const filePath of ignoreWalk(this.rootPath, { ignoreFiles: [ '.caisson-ignore' ] }))
         {
             const relativePath = relative(this.rootPath, filePath).replace(/\\/g, '/');
-            const dataPath = join(root.dataPath, relativePath).replace(/\\/g, '/');
+            const dataPath = join(root.path, relativePath).replace(/\\/g, '/');
             const parent = root.getInternalNodeAtPath(dirname(relativePath));
 
             const transformer = dataTransformers.find(transformer => transformer.applies(basename(filePath))) || StaticDataTransformer;
             const child = await transformer.transform(parent, dataPath, filePath);
-            if(!child.isStatic && 'template' in child.data)
+            if(!isStaticContentItem(child) && 'template' in child.data)
             {
                 const templateName = child.data['template'];
                 if(templateName in templates)

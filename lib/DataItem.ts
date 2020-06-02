@@ -1,21 +1,8 @@
 import { DataContext } from "./Caisson";
-import { DataInternalNode } from "./InternalDataNodes";
-import { StaticContentItem, ContentItem } from "./ContentItem";
 import { MaybePromise, PartialBy } from "./util/Util";
 import Config from "./Config";
-
-export interface DataItem
-{
-    readonly parent: DataInternalNode;
-    readonly data: any;
-    readonly name: string;
-    readonly dataPath: string;
-}
-
-export interface FileContentItem extends ContentItem
-{
-    readonly filePath: string;
-}
+import { DataInternalNode } from "./DataTreeInternalNode";
+import { ContentItem, StaticContentItem } from "./DataTreeLeafNode";
 
 export interface DataProvider
 {

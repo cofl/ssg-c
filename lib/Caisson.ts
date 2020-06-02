@@ -2,7 +2,7 @@ import Config from "./Config";
 import { DataTransformer } from "./DataItem";
 import util from "util";
 import { TemplateTransformer, Template } from "./Template";
-import { DataRoot } from "./InternalDataNodes";
+import { DataRoot } from "./DataTreeInternalNode";
 
 export interface TemplateContext
 {
@@ -57,7 +57,7 @@ export class Caisson
         }
 
         // inject into the data tree. The provider needs to do the linking itself.
-        const data: DataRoot = new DataRoot({}, '/');
+        const data: DataRoot = new DataRoot('/');
         {
             const context: DataContext = { caisson: this, templates, dataTransformers: this.config.dataTransformers };
             for(const mappingElement of this.config.dataProviders)

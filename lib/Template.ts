@@ -1,7 +1,7 @@
 import { TemplateContext } from "./Caisson";
-import { ContentItem } from "./ContentItem";
 import Config from "./Config";
 import { MaybePromise } from "./util/Util";
+import { ContentItem } from "./DataTreeLeafNode";
 
 export interface Template
 {
