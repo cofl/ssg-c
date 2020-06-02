@@ -3,8 +3,11 @@ import Config from "./Config";
 import { resolve } from "path";
 import { Command } from "commander";
 import { validateIsBufferEncoding } from "./util/Util";
-import pkg from "../package.json"
 import { existsSync } from "fs";
+const pkg = require(resolve(__dirname, '../package.json')) as {
+    version: string,
+    description: string
+};
 
 const args = new Command()
     .version(pkg.version)

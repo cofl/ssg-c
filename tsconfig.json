@@ -7,5 +7,11 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
     "resolveJsonModule": true
-  }
+  },
+  "include": [
+      "lib/**/*"
+  ],
+  "exclude": [
+      "**/package.json"
+  ]
 }
