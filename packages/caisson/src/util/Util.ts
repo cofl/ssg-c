@@ -24,6 +24,16 @@ export function asMaybeArray<T>(a: T | T[] | undefined): T[]
     return [ a ];
 }
 
+export function getPathAsComponents(path: string): string[]
+{
+    if(path[0] === '/')
+        path = path.slice(1);
+    const components = path.split('/');
+    if(components[0].length === 0)
+        components.shift();
+    return components;
+}
+
 export type MaybePromise<T> = T | Promise<T>;
 export type MaybeArray<T> = T | T[];
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<T>;

@@ -3,6 +3,8 @@ import { DataTransformer } from "./DataItem";
 import util from "util";
 import { TemplateTransformer, Template } from "./Template";
 import { DataRoot } from "./DataTreeInternalNode";
+import { ContentTree } from "./ContentTree";
+import { resolve, dirname } from "path";
 
 export interface TemplateContext
 {
@@ -14,6 +16,11 @@ export interface DataContext
     readonly caisson: Caisson;
     readonly templates: Record<string, Template>;
     readonly dataTransformers: DataTransformer[];
+}
+export interface RenderContext
+{
+    readonly caisson: Caisson;
+    readonly contentTree: ContentTree;
 }
 
 export class Caisson
@@ -64,6 +71,14 @@ export class Caisson
                 for(const basePath in mappingElement)
                     await mappingElement[basePath].populate(context, data.getInternalNodeAtPath(basePath));
         }
-        console.log(util.inspect(data, false, null, true));
+
+        const [, contentTreeMap] = ContentTree.fromData(data);
+        const outputPromises: Promise<void>[] = [];
+        for(const item of data.leaves())
+        {
+            const permalink = item.permalink;
+            const outputPath = resolve(this.config.outputDirectory, permalink.slice(1))
+            outputPromises.push(item.render({ caisson: this, contentTree: contentTreeMap[dirname(permalink)] }, outputPath));
+        }
     }
 }

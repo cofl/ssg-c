@@ -1,19 +1,10 @@
 import { posix } from "path";
 import { DataLeafNode } from "./DataTreeLeafNode";
+import { getPathAsComponents } from "./util/Util";
 
 export interface DataTreeNode
 {
     readonly isInternalNode: boolean;
-}
-
-function getPathAsComponents(path: string): string[]
-{
-    if(path[0] === '/')
-        path = path.slice(1);
-    const components = path.split('/');
-    if(components[0].length === 0)
-        components.shift();
-    return components;
 }
 
 export interface DataInternalNode extends DataTreeNode
@@ -70,7 +61,7 @@ export class DataRoot implements DataInternalNode
         {
             if(name in current.children)
             {
-                const child: any = current.children[name];
+                const child: DataTreeNode | DataLeafNode = current.children[name];
                 if(isDataInternalNode(child))
                     current = child;
                 else

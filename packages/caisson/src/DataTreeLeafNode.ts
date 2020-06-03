@@ -2,6 +2,8 @@ import { DataTreeNode, DataInternalNode } from "./DataTreeInternalNode";
 import { basename } from "path";
 import { Template } from "./Template";
 import { read } from "fs";
+import { RenderContext } from "./Caisson";
+import { ContentTree } from "./ContentTree";
 
 export enum DataLeafNodeType
 {
@@ -18,6 +20,8 @@ export interface DataLeafNode extends DataTreeNode
     readonly path: string;
     readonly name: string; // for use in data tree
     readonly permalink: string;
+
+    render(context: RenderContext, outputPath: string): Promise<void>;
 }
 
 export function isDataLeafNode(item: any): item is DataLeafNode
@@ -42,6 +46,11 @@ export class StaticContentItem implements DataLeafNode
     get permalink(): string
     {
         return this.data?.permalink || this.path;
+    }
+
+    async render(context: RenderContext, outputPath: string)
+    {
+        console.log(outputPath);
     }
 }
 
