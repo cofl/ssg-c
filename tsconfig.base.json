@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "baseUrl": "packages",
+        "target": "ES2019",
+        "module": "CommonJS",
+        "esModuleInterop": true,
+        "declaration": true,
+
+        "strict": true,
+        "strictNullChecks": true,
+        "forceConsistentCasingInFileNames": true,
+
+        "paths": {
+            "@caisson/*": [ "caisson/src/*" ],
+            "@caisson-cli/*": [ "caisson-cli/src/*" ]
+        },
+        "newLine": "lf"
+    }
+}

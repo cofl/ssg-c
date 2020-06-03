@@ -1,9 +1,19 @@
-import { Caisson } from "./Caisson";
-import Config from "./Config";
+import { Caisson } from "@caisson/Caisson";
+import Config from "@caisson/Config";
 import { resolve } from "path";
 import { Command } from "commander";
-import { validateIsBufferEncoding } from "./util/Util";
 import { existsSync } from "fs";
+
+
+function validateIsBufferEncoding(string: string | undefined): BufferEncoding | undefined
+{
+    if(!string)
+        return undefined;
+    if(Buffer.isEncoding(string))
+        return string;
+    throw `Unrecognized encoding type "${string}" provided.`;
+}
+
 const pkg = require(resolve(__dirname, '../package.json')) as {
     version: string,
     description: string

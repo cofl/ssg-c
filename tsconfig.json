@@ -1,17 +1,8 @@
 {
-  "compilerOptions": {
-    "target": "ES2019",
-    "module": "commonjs",
-    "strict": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
-    "resolveJsonModule": true
-  },
-  "include": [
-      "lib/**/*"
-  ],
-  "exclude": [
-      "**/package.json"
-  ]
+    "extends": "./tsconfig.base",
+    "references": [
+        { "path": "./packages/caisson" },
+        { "path": "./packages/caisson-cli" }
+    ],
+    "exclude": [ "./**/*" ]
 }

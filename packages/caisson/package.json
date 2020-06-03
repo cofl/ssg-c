@@ -1,0 +1,12 @@
+{
+    "name": "caisson",
+    "version": "0.0.0-a0",
+    "description": "Caisson static site generator.",
+    "main": "lib/index.js",
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "deepmerge": "^4.2.2",
+        "ignore": "^5.1.8"
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "name": "caisson",
+    "version": "0.0.0-a0",
+    "description": "",
+    "main": "lib/index.js",
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "caisson": "file:../caisson",
+        "commander": "^5.1.0"
+    },
+    "bin": {
+        "caisson-cli": "./lib/index.js"
+    }
+}
