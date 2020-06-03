@@ -1,5 +1,5 @@
 import { TemplateContext } from "./Caisson";
-import Config from "./Config";
+import { Config } from "./Config";
 import { MaybePromise } from "./util/Util";
 import { ContentItem } from "./DataTreeLeafNode";
 

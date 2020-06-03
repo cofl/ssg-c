@@ -1,6 +1,6 @@
 import { DataContext } from "./Caisson";
 import { MaybePromise, PartialBy } from "./util/Util";
-import Config from "./Config";
+import { Config } from "./Config";
 import { DataInternalNode } from "./DataTreeInternalNode";
 import { ContentItem, StaticContentItem } from "./DataTreeLeafNode";
 

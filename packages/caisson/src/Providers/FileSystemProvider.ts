@@ -4,7 +4,7 @@ import { relative, join, dirname, basename, resolve } from "path";
 import { existsSync, statSync, realpathSync } from "fs";
 import { DataContext } from "../Caisson";
 import { DataInternalNode } from "../DataTreeInternalNode";
-import Config from "../Config";
+import { Config } from "../Config";
 import { isStaticContentItem } from "../DataTreeLeafNode";
 
 export class FileSystemProvider implements DataProvider
@@ -12,16 +12,17 @@ export class FileSystemProvider implements DataProvider
     private rootPath: string;
     constructor(path: string)
     {
-        if(!existsSync(path))
-            throw `Path must exist: ${path}`;
-        if(!statSync(realpathSync(path)).isDirectory())
-            throw `Path must be a directory or a link to a directory: ${path}`;
         this.rootPath = path;
     }
 
     configure(config: Config): void
     {
         this.rootPath = resolve(config.rootDirectory, this.rootPath);
+
+        if(!existsSync(this.rootPath))
+            throw `Path must exist: ${this.rootPath}`;
+        if(!statSync(realpathSync(this.rootPath)).isDirectory())
+            throw `Path must be a directory or a link to a directory: ${this.rootPath}`;
     }
 
     async populate({ templates, dataTransformers }: DataContext, root: DataInternalNode): Promise<void>

@@ -2,7 +2,7 @@ import { TemplateContext } from "../Caisson";
 import ignoreWalk from "../util/IngoreWalk";
 import { basename, resolve } from "path";
 import { TemplateProvider, Template } from "../Template";
-import Config from "../Config";
+import { Config } from "../Config";
 
 export class FileSystemTemplateProvider implements TemplateProvider
 {

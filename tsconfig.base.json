@@ -11,8 +11,8 @@
         "forceConsistentCasingInFileNames": true,
 
         "paths": {
-            "@caisson/*": [ "caisson/src/*" ],
-            "@caisson-cli/*": [ "caisson-cli/src/*" ]
+            "@cofl/caisson": [ "caisson" ],
+            "@cofl/caisson-cli": [ "caisson-cli" ]
         },
         "newLine": "lf"
     }

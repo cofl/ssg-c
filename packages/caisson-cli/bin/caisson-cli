@@ -1,2 +1,3 @@
 #!/usr/bin/env node
+// TODO: fix this so I can use the scoped package name in caisson-dev
 require('../lib/index.js')

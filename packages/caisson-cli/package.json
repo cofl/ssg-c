@@ -6,10 +6,10 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "caisson": "file:../caisson",
+        "@cofl/caisson": "file:../caisson",
         "commander": "^5.1.0"
     },
     "bin": {
-        "caisson-cli": "./lib/index.js"
+        "caisson-cli": "bin/caisson-cli"
     }
 }

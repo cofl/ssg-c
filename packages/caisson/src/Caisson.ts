@@ -1,4 +1,4 @@
-import Config from "./Config";
+import { Config } from "./Config";
 import { DataTransformer } from "./DataItem";
 import util from "util";
 import { TemplateTransformer, Template } from "./Template";

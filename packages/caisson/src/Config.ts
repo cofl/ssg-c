@@ -21,7 +21,7 @@ export interface ConfigObjectOptions
     defaultEncoding?: BufferEncoding;
 }
 
-export default class Config
+export class Config
 {
     readonly rootDirectory: string;
     readonly dataProviders: Record<string, DataProvider>[] = [];

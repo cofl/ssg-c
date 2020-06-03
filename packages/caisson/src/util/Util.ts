@@ -1,4 +1,4 @@
-import Config from "../Config";
+import { Config } from "../Config";
 import deepmerge from "deepmerge";
 
 export function mergeCurry(config: Config): (...objects: object[]) => object

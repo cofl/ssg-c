@@ -8,7 +8,6 @@
         "url": "git+https://github.com/cofl/ssg-c.git"
     },
     "dependencies": {
-        "caisson": "file:packages/caisson-cli",
         "caisson-cli": "file:packages/caisson-cli"
     },
     "devDependencies": {

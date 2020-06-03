@@ -1,5 +1,4 @@
-import { Caisson } from "@caisson/Caisson";
-import Config from "@caisson/Config";
+import { Caisson, Config } from "@cofl/caisson";
 import { resolve } from "path";
 import { Command } from "commander";
 import { existsSync } from "fs";
