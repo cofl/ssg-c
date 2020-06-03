@@ -4,6 +4,7 @@ import { join, resolve } from "path";
 import { FileSystemTemplateProvider } from "./Providers/FileSystemTemplateProvider";
 import { asMaybeArray, MaybeArray } from "./util/Util";
 import { TemplateTransformer, TemplateProvider } from "./Template";
+import { CaissonPlugin } from "./CaissonPlugin";
 
 interface Paths
 {
@@ -29,6 +30,7 @@ export class Config
     readonly dataTransformers: DataTransformer[] = [];
     readonly templateProviders: TemplateProvider[] = [];
     readonly templateTransformers: TemplateTransformer[] = [];
+    readonly pluginList: CaissonPlugin[] = [];
 
     defaultEncoding: BufferEncoding;
     doDeepMerge: boolean = false;
@@ -57,6 +59,7 @@ export class Config
 
     normalizeAndUseConventionIfNotConfigured(): Config
     {
+        // TODO: load plugins from options path
         if(this.dataProviders.length == 0)
             this.dataProviders.push({ '/': new FileSystemProvider('content') });
         for(const mapping of this.dataProviders)
@@ -98,5 +101,10 @@ export class Config
         if('locale' in options)
             this.locale = options.locale;
         return this;
+    }
+
+    registerPlugin(plugin: CaissonPlugin)
+    {
+        this.pluginList.push(plugin);
     }
 }

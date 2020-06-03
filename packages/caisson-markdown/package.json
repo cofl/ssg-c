@@ -1,0 +1,14 @@
+{
+    "name": "caisson-markdown",
+    "version": "0.0.0-a0",
+    "description": "",
+    "main": "lib/index.js",
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@cofl/caisson": "file:../caisson",
+        "gray-matter": "^4.0.2",
+        "remark": "^12.0.0",
+        "remark-html": "^11.0.2"
+    }
+}

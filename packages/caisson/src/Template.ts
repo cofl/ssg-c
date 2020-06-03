@@ -1,6 +1,5 @@
 import { TemplateContext } from "./Caisson";
 import { Config } from "./Config";
-import { MaybePromise } from "./util/Util";
 import { ContentItem } from "./DataTreeLeafNode";
 
 export interface Template
@@ -14,13 +13,13 @@ export interface Template
 export interface TemplateProvider
 {
     getTemplates(context: TemplateContext): AsyncGenerator<Template, void, undefined>;
-    configure(config: Config): MaybePromise<void>
+    configure(config: Config): void | Promise<void>
 }
 
 export interface TemplateTransformer
 {
     applies(fileName: string): boolean,
-    transform(filePath: string): MaybePromise<Template>
+    transform(filePath: string): Template | Promise<Template>
 }
 
 export class DefaultTemplate implements Template

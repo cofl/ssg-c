@@ -8,9 +8,11 @@
         "url": "git+https://github.com/cofl/ssg-c.git"
     },
     "dependencies": {
-        "caisson-cli": "file:packages/caisson-cli"
+        "caisson-cli": "file:packages/caisson-cli",
+        "caisson-markdown": "file:packages/caisson-markdown"
     },
     "devDependencies": {
+        "@types/mkdirp": "^1.0.0",
         "@types/node": "^14.0.9",
         "typescript": "^3.9.3"
     }

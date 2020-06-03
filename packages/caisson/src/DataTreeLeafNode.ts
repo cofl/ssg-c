@@ -1,9 +1,9 @@
 import { DataTreeNode, DataInternalNode } from "./DataTreeInternalNode";
 import { basename } from "path";
 import { Template } from "./Template";
-import { read } from "fs";
+import { writeFile, copyFile } from "fs";
 import { RenderContext } from "./Caisson";
-import { ContentTree } from "./ContentTree";
+import { promisify } from "util";
 
 export enum DataLeafNodeType
 {
@@ -29,6 +29,9 @@ export function isDataLeafNode(item: any): item is DataLeafNode
     return item.isInternalNode === false && item.nodeType !== undefined;
 }
 
+const copyFilePromisfied = promisify(copyFile);
+const writeFilePromisified = promisify(writeFile);
+
 export class StaticContentItem implements DataLeafNode
 {
     readonly isInternalNode: false = false;
@@ -48,9 +51,9 @@ export class StaticContentItem implements DataLeafNode
         return this.data?.permalink || this.path;
     }
 
-    async render(context: RenderContext, outputPath: string)
+    render(context: RenderContext, outputPath: string)
     {
-        console.log(outputPath);
+        return copyFilePromisfied(this.filePath, outputPath);
     }
 }
 
@@ -59,9 +62,25 @@ export function isStaticContentItem(item: any): item is StaticContentItem
     return isDataLeafNode(item) && item.nodeType === DataLeafNodeType.Static;
 }
 
-export interface ContentItem extends DataLeafNode
+export abstract class ContentItem implements DataLeafNode
 {
-    readonly nodeType: DataLeafNodeType.File | DataLeafNodeType.Generated;
-    content: string;
+    readonly isInternalNode: false = false;
+    name: string;
     template?: Template;
+    constructor(public readonly nodeType: DataLeafNodeType.File | DataLeafNodeType.Generated,
+                public readonly path: string,
+                public readonly data: any,
+                public readonly content: string)
+    {
+        this.name = basename(path);
+    }
+
+    get permalink(): string
+    {
+        return this.data?.permalink || this.path;
+    }
+
+    render(_context: RenderContext, outputPath: string): Promise<void> {
+        return writeFilePromisified(outputPath, this.content);
+    }
 }

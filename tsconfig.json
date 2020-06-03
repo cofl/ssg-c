@@ -2,7 +2,8 @@
     "extends": "./tsconfig.base",
     "references": [
         { "path": "./packages/caisson" },
-        { "path": "./packages/caisson-cli" }
+        { "path": "./packages/caisson-cli" },
+        { "path": "./packages/caisson-markdown" }
     ],
     "exclude": [ "./**/*" ]
 }

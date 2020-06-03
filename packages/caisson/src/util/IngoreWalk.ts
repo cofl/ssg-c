@@ -42,6 +42,7 @@ export default async function* ignoreWalk(root: string, options: Options): Async
         if(null === entry)
         {
             // skip empty directories
+            await top.dir.close();
             stack.pop();
             continue;
         }
@@ -79,6 +80,7 @@ export default async function* ignoreWalk(root: string, options: Options): Async
         }
 
         // remove directories when we're done processing them.
+        await top.dir.close();
         stack.pop();
     }
 }

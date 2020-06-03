@@ -1,19 +1,20 @@
 import { DataContext } from "./Caisson";
-import { MaybePromise, PartialBy } from "./util/Util";
+import { PartialBy } from "./util/Util";
 import { Config } from "./Config";
 import { DataInternalNode } from "./DataTreeInternalNode";
 import { ContentItem, StaticContentItem } from "./DataTreeLeafNode";
 
 export interface DataProvider
 {
-    populate(context: DataContext, root: DataInternalNode): MaybePromise<void>;
-    configure(config: Config): MaybePromise<void>;
+    populate(context: DataContext, root: DataInternalNode): void | Promise<void>;
+    configure(config: Config): void | Promise<void>;
 }
 
+export type DataTransformerReturnType = PartialBy<ContentItem, 'template'> | StaticContentItem;
 export interface DataTransformer
 {
     applies(fileName: string): boolean,
-    transform(parent: DataInternalNode, path: string, filePath: string): MaybePromise<PartialBy<ContentItem, 'template'> | StaticContentItem>
+    transform(parent: DataInternalNode, path: string, filePath: string): DataTransformerReturnType | Promise<DataTransformerReturnType>;
 }
 
 export const StaticDataTransformer: DataTransformer =

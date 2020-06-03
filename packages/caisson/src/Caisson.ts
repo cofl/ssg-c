@@ -1,10 +1,11 @@
 import { Config } from "./Config";
 import { DataTransformer } from "./DataItem";
-import util from "util";
 import { TemplateTransformer, Template } from "./Template";
 import { DataRoot } from "./DataTreeInternalNode";
 import { ContentTree } from "./ContentTree";
 import { resolve, dirname } from "path";
+import { CaissonPlugin, CaissonPluginLoader } from "./CaissonPlugin";
+import mkdirp from "mkdirp";
 
 export interface TemplateContext
 {
@@ -25,20 +26,33 @@ export interface RenderContext
 
 export class Caisson
 {
-    readonly config: Config;
-    // TODO
+    private readonly config: Config;
+    private readonly pluginLoader = new Caisson.PluginLoader(this);
     constructor(config: Config)
     {
         this.config = config.normalizeAndUseConventionIfNotConfigured();
-        // TODO
     }
 
     // Accessors for things in config that may be needed in contexts
     get rootDirectory(): string { return this.config.rootDirectory; }
     get locale(): string | undefined { return this.config.locale; }
 
+    // Plugin registration/loading
+    private static readonly PluginLoader = class PluginLoader implements CaissonPluginLoader
+    {
+        constructor(public readonly caisson: Caisson){}
+        registerDataTransformer(transformer: DataTransformer)
+        {
+            this.caisson.config.dataTransformers.push(transformer);
+        }
+    };
+
     async build()
     {
+        // register plugins from config
+        for(const plugin of this.config.pluginList)
+            plugin.register(this.pluginLoader);
+
         // load and link templates
         const templates: Record<string, Template> = {};
         {
@@ -78,7 +92,12 @@ export class Caisson
         {
             const permalink = item.permalink;
             const outputPath = resolve(this.config.outputDirectory, permalink.slice(1))
-            outputPromises.push(item.render({ caisson: this, contentTree: contentTreeMap[dirname(permalink)] }, outputPath));
+            outputPromises.push(
+                mkdirp(dirname(outputPath))
+                    .then(() => item.render({ caisson: this, contentTree: contentTreeMap[dirname(permalink)] }, outputPath))
+            );
         }
+        await Promise.all(outputPromises);
+        console.log("done!");
     }
 }

@@ -12,7 +12,8 @@
 
         "paths": {
             "@cofl/caisson": [ "caisson" ],
-            "@cofl/caisson-cli": [ "caisson-cli" ]
+            "@cofl/caisson-cli": [ "caisson-cli" ],
+            "@cofl/caisson-markdown": [ "caisson-markdown" ]
         },
         "newLine": "lf"
     }
