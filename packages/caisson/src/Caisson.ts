@@ -51,7 +51,7 @@ export class Caisson
     {
         // register plugins from config
         for(const plugin of this.config.pluginList)
-            plugin.register(this.pluginLoader);
+            plugin(this.pluginLoader);
 
         // load and link templates
         const templates: Record<string, Template> = {};

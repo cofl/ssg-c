@@ -1,16 +1,12 @@
-import { CaissonPlugin, CaissonPluginLoader, DataTransformer, DataInternalNode, ContentItem, DataLeafNodeType, RenderContext } from "@cofl/caisson";
+import { CaissonPluginLoader, DataTransformer, DataInternalNode, ContentItem, DataLeafNodeType, RenderContext } from "@cofl/caisson";
 import graymatter from "gray-matter";
 import remark from "remark";
 import { readFileSync } from "fs";
 
-export class CaissonMarkdownPlugin implements CaissonPlugin
-{
-    constructor(){}
-    register(loader: CaissonPluginLoader): void | Promise<void> {
-        // TODO: options
-        const processor: (file: string) => Promise<any> = remark().use(require("remark-html")).process;
-        loader.registerDataTransformer(new MarkdownDataTransformer(processor));
-    }
+export = function register(loader: CaissonPluginLoader): void | Promise<void> {
+    // TODO: options
+    const processor: (file: string) => Promise<any> = remark().use(require("remark-html")).process;
+    loader.registerDataTransformer(new MarkdownDataTransformer(processor));
 }
 
 class MarkdownContentItem extends ContentItem

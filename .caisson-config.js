@@ -1,5 +1,5 @@
 module.exports = function(caisson){
-    caisson.registerPlugin(new (require("./packages/caisson-markdown").CaissonMarkdownPlugin)());
+    caisson.registerPlugin(require("./packages/caisson-markdown"));
     return {
         providers: {
             '/': 'test/content',
