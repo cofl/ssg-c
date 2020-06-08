@@ -1,11 +1,12 @@
 import { DataProvider, StaticDataTransformer } from "../DataItem";
 import ignoreWalk from "../util/IngoreWalk";
 import { relative, join, dirname, basename, resolve } from "path";
-import { existsSync, statSync, realpathSync } from "fs";
+import { existsSync, statSync, realpathSync, readFileSync } from "fs";
 import { DataContext } from "../Caisson";
 import { DataInternalNode } from "../DataTreeInternalNode";
 import { Config } from "../Config";
 import { isStaticContentItem } from "../DataTreeLeafNode";
+import graymatter from "gray-matter";
 
 export class FileSystemProvider implements DataProvider
 {
@@ -25,7 +26,7 @@ export class FileSystemProvider implements DataProvider
             throw `Path must be a directory or a link to a directory: ${this.rootPath}`;
     }
 
-    async populate({ templates, dataTransformers }: DataContext, root: DataInternalNode): Promise<void>
+    async populate({ caisson, templates, dataTransformers }: DataContext, root: DataInternalNode): Promise<void>
     {
         for await(const filePath of ignoreWalk(this.rootPath, { ignoreFiles: [ '.caisson-ignore' ] }))
         {
@@ -33,6 +34,14 @@ export class FileSystemProvider implements DataProvider
             const dataPath = join(root.path, relativePath).replace(/\\/g, '/');
             const parent = root.getInternalNodeAtPath(dirname(relativePath));
 
+            if(caisson.fileExtensionsWithMatter.test(filePath))
+            {
+                const { data, content } = graymatter(readFileSync(filePath, { encoding: caisson.encoding }))
+                // TOOD: frontmatter
+            } else
+            {
+                // TODO: static
+            }
             const transformer = dataTransformers.find(transformer => transformer.applies(basename(filePath))) || StaticDataTransformer;
             const child = await transformer.transform(parent, dataPath, filePath);
             if(!isStaticContentItem(child) && 'template' in child.data)

@@ -5,6 +5,7 @@ import { getPathAsComponents } from "./util/Util";
 export interface DataTreeNode
 {
     readonly isInternalNode: boolean;
+    readonly path: string;
 }
 
 export interface DataInternalNode extends DataTreeNode

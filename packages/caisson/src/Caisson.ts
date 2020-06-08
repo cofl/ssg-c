@@ -4,8 +4,9 @@ import { TemplateTransformer, Template } from "./Template";
 import { DataRoot } from "./DataTreeInternalNode";
 import { ContentTree } from "./ContentTree";
 import { resolve, dirname } from "path";
-import { CaissonPlugin, CaissonPluginLoader } from "./CaissonPlugin";
+import { CaissonPluginLoader } from "./CaissonPlugin";
 import mkdirp from "mkdirp";
+import ignore, { Ignore } from "ignore";
 
 export interface TemplateContext
 {
@@ -31,11 +32,14 @@ export class Caisson
     constructor(config: Config)
     {
         this.config = config.normalizeAndUseConventionIfNotConfigured();
+        this.fileExtensionsWithMatter = ignore().add(this.config.fileExtensionsWithMatter.map(a => `*${a[0] === '.' ? a : `.${a}`}`));
     }
 
     // Accessors for things in config that may be needed in contexts
     get rootDirectory(): string { return this.config.rootDirectory; }
     get locale(): string | undefined { return this.config.locale; }
+    get encoding(): BufferEncoding { return this.config.defaultEncoding; }
+    readonly fileExtensionsWithMatter: Ignore;
 
     // Plugin registration/loading
     private static readonly PluginLoader = class PluginLoader implements CaissonPluginLoader
@@ -91,7 +95,7 @@ export class Caisson
         for(const item of data.leaves())
         {
             const permalink = item.permalink;
-            const outputPath = resolve(this.config.outputDirectory, permalink.slice(1))
+            const outputPath = resolve(this.config.outputDirectory, permalink.slice(1));
             outputPromises.push(
                 mkdirp(dirname(outputPath))
                     .then(() => item.render({ caisson: this, contentTree: contentTreeMap[dirname(permalink)] }, outputPath))

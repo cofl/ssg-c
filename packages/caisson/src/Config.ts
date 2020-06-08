@@ -32,6 +32,11 @@ export class Config
     readonly templateTransformers: TemplateTransformer[] = [];
     readonly pluginList: CaissonPlugin[] = [];
 
+    readonly fileExtensionsWithMatter: string[] = [
+        ".md",
+        ".markdown"
+    ];
+
     defaultEncoding: BufferEncoding;
     doDeepMerge: boolean = false;
     locale: string | undefined;
