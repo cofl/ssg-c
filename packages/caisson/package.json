@@ -9,6 +9,7 @@
         "deepmerge": "^4.2.2",
         "gray-matter": "^4.0.2",
         "ignore": "^5.1.8",
-        "mkdirp": "^1.0.4"
+        "mkdirp": "^1.0.4",
+        "mime-types": "^2.1.27"
     }
 }

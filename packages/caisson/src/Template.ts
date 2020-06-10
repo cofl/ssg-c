@@ -1,13 +1,13 @@
 import { TemplateContext } from "./Caisson";
 import { Config } from "./Config";
-import { ContentItem } from "./DataTreeLeafNode";
+import { DataContentNode } from "./DataTree";
 
 export interface Template
 {
     parent?: Template;
     readonly data: any;
     readonly name: string;
-    process(item: ContentItem): void;
+    process(item: DataContentNode): void;
 }
 
 export interface TemplateProvider
@@ -27,7 +27,7 @@ export class DefaultTemplate implements Template
     data: any = {};
     name: string = '';
     path: string = '';
-    process(item: ContentItem): void {
+    process(item: DataContentNode): void {
         // nop
     }
 }

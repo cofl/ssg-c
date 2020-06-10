@@ -1,4 +1,5 @@
-import { DataProvider, DataTransformer } from "./DataItem";
+import { DataProvider } from "./DataTree";
+//import { DataTransformer } from "./DataItem";
 import { FileSystemProvider } from "./Providers/FileSystemProvider";
 import { join, resolve } from "path";
 import { FileSystemTemplateProvider } from "./Providers/FileSystemTemplateProvider";
@@ -27,15 +28,15 @@ export class Config
 {
     readonly rootDirectory: string;
     readonly dataProviders: Record<string, DataProvider>[] = [];
-    readonly dataTransformers: DataTransformer[] = [];
+    //readonly dataTransformers: DataTransformer[] = [];
     readonly templateProviders: TemplateProvider[] = [];
     readonly templateTransformers: TemplateTransformer[] = [];
     readonly pluginList: CaissonPlugin[] = [];
 
-    readonly fileExtensionsWithMatter: string[] = [
-        ".md",
-        ".markdown"
-    ];
+    readonly fileTypesWithMatter: Record<string, true> = {
+        "text/markdown": true
+    };
+    readonly fileWithMatterPatterns: RegExp[] = [];
 
     defaultEncoding: BufferEncoding;
     doDeepMerge: boolean = false;
@@ -52,8 +53,8 @@ export class Config
         this.locale = config.locale;
         if(config.dataProviders)
             this.dataProviders.push(...config.dataProviders);
-        if(config.dataTransformers)
-            this.dataTransformers.push(...config.dataTransformers);
+        //if(config.dataTransformers)
+            //this.dataTransformers.push(...config.dataTransformers);
         if(config.templateProviders)
             this.templateProviders.push(...config.templateProviders);
         if(config.templateTransformers)

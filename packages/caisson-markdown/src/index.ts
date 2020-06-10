@@ -1,4 +1,4 @@
-import { CaissonPluginLoader, DataTransformer, DataInternalNode, ContentItem, DataLeafNodeType, RenderContext } from "@cofl/caisson";
+/*import { CaissonPluginLoader, DataTransformer, DataInternalNode, ContentItem, DataLeafNodeType, RenderContext } from "@cofl/caisson";
 import graymatter from "gray-matter";
 import remark from "remark";
 import { readFileSync } from "fs";
@@ -34,3 +34,4 @@ class MarkdownDataTransformer implements DataTransformer
         return new MarkdownContentItem(path.replace(/\.(md|markdown)$/, '.html'), filePath, data, String(await this.processor(content)));
     }
 }
+*/

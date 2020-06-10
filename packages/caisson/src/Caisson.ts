@@ -1,12 +1,12 @@
 import { Config } from "./Config";
-import { DataTransformer } from "./DataItem";
+//import { DataTransformer } from "./DataItem";
 import { TemplateTransformer, Template } from "./Template";
-import { DataRoot } from "./DataTreeInternalNode";
 import { ContentTree } from "./ContentTree";
-import { resolve, dirname } from "path";
+import { resolve, dirname, basename } from "path";
 import { CaissonPluginLoader } from "./CaissonPlugin";
 import mkdirp from "mkdirp";
-import ignore, { Ignore } from "ignore";
+import { DataTree } from "./DataTree";
+import { lookup } from "mime-types";
 
 export interface TemplateContext
 {
@@ -17,7 +17,7 @@ export interface DataContext
 {
     readonly caisson: Caisson;
     readonly templates: Record<string, Template>;
-    readonly dataTransformers: DataTransformer[];
+    //readonly dataTransformers: DataTransformer[];
 }
 export interface RenderContext
 {
@@ -32,23 +32,29 @@ export class Caisson
     constructor(config: Config)
     {
         this.config = config.normalizeAndUseConventionIfNotConfigured();
-        this.fileExtensionsWithMatter = ignore().add(this.config.fileExtensionsWithMatter.map(a => `*${a[0] === '.' ? a : `.${a}`}`));
     }
 
     // Accessors for things in config that may be needed in contexts
     get rootDirectory(): string { return this.config.rootDirectory; }
     get locale(): string | undefined { return this.config.locale; }
     get encoding(): BufferEncoding { return this.config.defaultEncoding; }
-    readonly fileExtensionsWithMatter: Ignore;
+
+    hasMatter(path: string)
+    {
+        if(lookup(path) in this.config.fileTypesWithMatter)
+            return true;
+        const fileName = basename(path);
+        return this.config.fileWithMatterPatterns.some(a => a.test(fileName));
+    }
 
     // Plugin registration/loading
     private static readonly PluginLoader = class PluginLoader implements CaissonPluginLoader
     {
         constructor(public readonly caisson: Caisson){}
-        registerDataTransformer(transformer: DataTransformer)
+        /*registerDataTransformer(transformer: DataTransformer)
         {
             this.caisson.config.dataTransformers.push(transformer);
-        }
+        }*/
     };
 
     async build()
@@ -82,12 +88,12 @@ export class Caisson
         }
 
         // inject into the data tree. The provider needs to do the linking itself.
-        const data: DataRoot = new DataRoot('/');
+        const data: DataTree = new DataTree('/', undefined);
         {
-            const context: DataContext = { caisson: this, templates, dataTransformers: this.config.dataTransformers };
+            const context: DataContext = { caisson: this, templates, /*dataTransformers: this.config.dataTransformers */};
             for(const mappingElement of this.config.dataProviders)
                 for(const basePath in mappingElement)
-                    await mappingElement[basePath].populate(context, data.getInternalNodeAtPath(basePath));
+                    await mappingElement[basePath].populate(context, data.getOrCreateTreeAtPath(basePath));
         }
 
         const [, contentTreeMap] = ContentTree.fromData(data);

@@ -1,5 +1,4 @@
-import { DataRoot } from "./DataTreeInternalNode";
-import { DataLeafNode } from "./DataTreeLeafNode";
+import { DataTree, DataContentNode } from "./DataTree";
 import { getPathAsComponents } from "./util/Util";
 import { parse, posix } from "path";
 
@@ -23,7 +22,7 @@ export class ContentTree
         this.permalink = parent ? posix.join(parent.permalink, name) : name;
     }
 
-    static fromData(data: DataRoot): [ ContentTree, Record<string, ContentTree> ]
+    static fromData(data: DataTree): [ ContentTree, Record<string, ContentTree> ]
     {
         const root = new ContentTree();
         const lookupMap: Record<string, ContentTree> = { [root.permalink]: root};
@@ -63,14 +62,14 @@ export class ContentFile
 {
     constructor(public readonly parent: ContentTree,
                 public readonly name: string,
-                public readonly item: DataLeafNode)
+                public readonly item: DataContentNode)
     {
         // nop
     }
 
     get data(): any
     {
-        return this.item.data;
+        return this.item.getComputedData();
     }
 
     get permalink(): string
