@@ -4,7 +4,7 @@ import { FileSystemProvider } from "./Providers/FileSystemProvider";
 import { join, resolve } from "path";
 import { FileSystemTemplateProvider } from "./Providers/FileSystemTemplateProvider";
 import { asMaybeArray, MaybeArray } from "./util/Util";
-import { TemplateTransformer, TemplateProvider } from "./Template";
+import { TemplateTransformer, TemplateProvider, JSTemplateTransformer } from "./Template";
 import { CaissonPlugin } from "./CaissonPlugin";
 
 interface Paths
@@ -73,6 +73,8 @@ export class Config
                 provider.configure(this);
         if(this.templateProviders.length === 0)
             this.templateProviders.push(new FileSystemTemplateProvider('templates'));
+        // TODO if !dontRegisterJSTransformer
+        this.templateTransformers.push(JSTemplateTransformer);
         for(const provider of this.templateProviders)
             provider.configure(this);
         return this;

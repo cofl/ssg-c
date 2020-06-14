@@ -63,7 +63,7 @@ export class Caisson
         for(const plugin of this.config.pluginList)
             plugin(this.pluginLoader);
 
-        // load and link templates
+        // load templates
         const templates: Record<string, Template> = {};
         {
             const context: TemplateContext = {
@@ -73,17 +73,17 @@ export class Caisson
             for(const provider of this.config.templateProviders)
                 for await(const template of provider.getTemplates(context))
                     templates[template.name] = template;
-        }
-        for(const templateName in templates)
-        {
-            const template = templates[templateName];
-            if(!template.parent && ('template' in template.data))
+            for(const templateName in templates)
             {
-                const parentName = template.data['template'];
-                if(parentName in templates)
-                    template.parent = templates[parentName];
-                else
-                    throw `Unrecognized template name "${parentName}".`;
+                const template = templates[templateName];
+                if(!template.parent && ('template' in template.data))
+                {
+                    const parentName = template.data['template'];
+                    if(parentName in templates)
+                        template.parent = templates[parentName];
+                    else
+                        throw `Unrecognized template name "${parentName}".`;
+                }
             }
         }
 
@@ -100,12 +100,12 @@ export class Caisson
         const outputPromises: Promise<void>[] = [];
         for(const item of data.leaves())
         {
+            // TODO: preprocess/transform/postprocess
             const permalink = item.permalink;
             const outputPath = resolve(this.config.outputDirectory, permalink.slice(1));
             outputPromises.push(
                 mkdirp(dirname(outputPath))
-                    .then(() => item.render({ caisson: this, contentTree: contentTreeMap[dirname(permalink)] }, outputPath))
-            );
+                    .then(() => item.render({ caisson: this, contentTree: contentTreeMap[dirname(permalink)] }, outputPath)));
         }
         await Promise.all(outputPromises);
         console.log("done!");

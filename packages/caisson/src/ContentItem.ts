@@ -45,3 +45,15 @@ export function SomeContentItem(filePath: string, content: Buffer | string): Fil
             writeFilePromisified(outputPath, content)
     }
 }
+
+export function GeneratedContentItem(filePath: string): FileContentItem
+{
+    // TODO: make this a class and actually work.
+    return {
+        // TODO: including contentType may not work. Need way to override per file. Secondary extension?
+        filePath, contentType: lookupMime(filePath) || 'application/octet-stream',
+        get content(){ return require(filePath)() },
+        render: (_context: RenderContext, _node: DataContentNode, outputPath: string): Promise<void> =>
+            writeFilePromisified(outputPath, require(filePath)())
+    }
+}
